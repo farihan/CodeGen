@@ -44,6 +44,9 @@ namespace Hans.CodeGen.App
             var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
 
+            if (db.Schemas.Where(p => p.Table == tableName).FirstOrDefault(c => c.ColumnType == "PK") != null)
+                id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault(c => c.ColumnType == "PK").Column;
+
             var outFile = File.CreateText(textPath);
 
             outFile.WriteLine("using System;");
@@ -109,7 +112,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        [ResponseType(typeof({0}))]", className);
             outFile.WriteLine("        public async Task<IHttpActionResult> Delete{0}(int id)", className);
             outFile.WriteLine("        {");
-            outFile.WriteLine("            var {0} = await {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
+            outFile.WriteLine("            var {0} = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
             outFile.WriteLine("            if ({0} == null)", className.ToLower());
             outFile.WriteLine("            {");
             outFile.WriteLine("                return NotFound();");
@@ -140,8 +143,8 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            }");
             outFile.WriteLine("            catch (DbUpdateConcurrencyException)");
             outFile.WriteLine("            {");
-            outFile.WriteLine("                var {0} = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
-            outFile.WriteLine("                if ({0} != null)", className.ToLower());
+            outFile.WriteLine("                var {0}ToEdit = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
+            outFile.WriteLine("                if ({0}ToEdit != null)", className.ToLower());
             outFile.WriteLine("                {");
             outFile.WriteLine("                    return NotFound();");
             outFile.WriteLine("                }");
@@ -153,17 +156,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("");
             outFile.WriteLine("            return StatusCode(HttpStatusCode.NoContent);");
             outFile.WriteLine("        }");
-            //outFile.WriteLine();
-            //outFile.WriteLine("        protected override void Dispose(bool disposing)");
-            //outFile.WriteLine("        {");
-            //outFile.WriteLine("            if (disposing)");
-            //outFile.WriteLine("            {");
-            //outFile.WriteLine("                {0}Repository.Dispose();", className);
-            //outFile.WriteLine("            }");
-            //outFile.WriteLine("");
-            //outFile.WriteLine("            base.Dispose(disposing);");
-            //outFile.WriteLine("        }");
-            //outFile.WriteLine();
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
 
