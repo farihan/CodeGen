@@ -41,7 +41,7 @@ namespace Hans.CodeGen.App
 
         private static void WriterForApiController(string path, string tableName, string className, DatabaseInfo db)
         {
-            var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.ApiController);
+            var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
 
             var outFile = File.CreateText(textPath);
