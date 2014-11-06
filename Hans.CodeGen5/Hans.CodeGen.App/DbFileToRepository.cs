@@ -61,12 +61,12 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        void DeleteAsync(TModel instance);");
             outFile.WriteLine("");
             outFile.WriteLine("        IList<TModel> FindAll();");
-            outFile.WriteLine("        IList<TModel> FindAllBy(System.Linq.Expressions.Expression<Func<TModel, bool>> where);");
-            outFile.WriteLine("        TModel FindOneBy(System.Linq.Expressions.Expression<Func<TModel, bool>> where);");
+            outFile.WriteLine("        IList<TModel> FindAllBy(Expression<Func<TModel, bool>> where);");
+            outFile.WriteLine("        TModel FindOneBy(Expression<Func<TModel, bool>> where);");
             outFile.WriteLine("");
             outFile.WriteLine("        Task<IList<TModel>> FindAllAsync();");
-            outFile.WriteLine("        Task<IList<TModel>> FindAllByAsync(System.Linq.Expressions.Expression<Func<TModel, bool>> where);");
-            outFile.WriteLine("        Task<TModel> FindOneByAsync(System.Linq.Expressions.Expression<Func<TModel, bool>> where);");
+            outFile.WriteLine("        Task<IList<TModel>> FindAllByAsync(Expression<Func<TModel, bool>> where);");
+            outFile.WriteLine("        Task<TModel> FindOneByAsync(Expression<Func<TModel, bool>> where);");
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
             outFile.Close();
@@ -105,7 +105,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        public void Update(TModel instance)");
             outFile.WriteLine("        {");
             outFile.WriteLine("            Context.Set<TModel>().Attach(instance);");
-            outFile.WriteLine("            Context.Entry(instance).State = System.Data.Entity.EntityState.Modified;");
+            outFile.WriteLine("            Context.Entry(instance).State = System.Data.EntityState.Modified;");
             outFile.WriteLine("            Context.SaveChanges();");
             outFile.WriteLine("        }");
             outFile.WriteLine("");
@@ -124,7 +124,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        public void UpdateAsync(TModel instance)");
             outFile.WriteLine("        {");
             outFile.WriteLine("            Context.Set<TModel>().Attach(instance);");
-            outFile.WriteLine("            Context.Entry(instance).State = System.Data.Entity.EntityState.Modified;");
+            outFile.WriteLine("            Context.Entry(instance).State = System.Data.EntityState.Modified;");
             outFile.WriteLine("            Context.SaveChangesAsync();");
             outFile.WriteLine("        }");
             outFile.WriteLine("");
