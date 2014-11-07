@@ -22,5 +22,7 @@ namespace Hans.CodeGen.Core.Domains
         public List<Schema> Schemas { get; set; }
         public List<Relation> Relations { get; set; }
         public List<Constraint> Constraints { get; set; }
+
+        public List<string> TableNames { get; set; }
     }
 }

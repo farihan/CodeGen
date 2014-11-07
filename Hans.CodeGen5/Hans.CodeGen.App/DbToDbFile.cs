@@ -23,6 +23,7 @@ namespace Hans.CodeGen.App
                     db.Schemas = repo.GetSchemas();
                     db.Constraints = repo.GetConstraints();
                     db.Relations = repo.GetRelations();
+                    db.TableNames = repo.GetBaseTableNames();
                 }
                 else if (db.DatabaseType.ToLower() == DbType.Oracle)
                 {
@@ -37,14 +38,10 @@ namespace Hans.CodeGen.App
                 var fileName = string.Format(@"{0}\{1}", db.OutputDirectory, db.InputAndOutputDbFile);
                 Folder.Create(db.OutputDirectory);
                 var outFile = System.IO.File.CreateText(fileName);
-                var list = db.Schemas.Select(x => x.Table)
-                    .Distinct()
-                    .OrderBy(x => x)
-                    .ToList();
 
-                foreach (var tableName in list)
+                foreach (var tableName in db.TableNames)
                 {
-                    outFile.WriteLine("{0} {1}", DbLineType.Table, tableName);
+                    outFile.WriteLine("{0} {1}", DbLineType.Table, tableName.Replace(" ", "_"));
 
                     if (db.DatabaseType.ToLower() == DbType.Oracle)
                     {
@@ -73,14 +70,14 @@ namespace Hans.CodeGen.App
 
                     foreach (var r in db.Relations.Where(p => p.ParentTable == tableName).OrderBy(p => p.ChildTable))
                     {
-                        outFile.WriteLine("hasmany: {0} {1}", r.ChildTable, r.PkConstraintColumn);
+                        outFile.WriteLine("hasmany: {0} {1}", r.ChildTable.Replace(" ", "_"), r.PkConstraintColumn);
                     }
 
                     foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
                     {
                         if (r.ParentTable == tableName)
                             break;
-                        outFile.WriteLine("belongto: {0} {1}", r.ParentTable, r.FkConstraintColumn);
+                        outFile.WriteLine("belongto: {0} {1}", r.ParentTable.Replace(" ", "_"), r.FkConstraintColumn);
                     }
 
                     outFile.WriteLine("-");

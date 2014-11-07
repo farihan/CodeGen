@@ -43,7 +43,7 @@ namespace Hans.CodeGen.App
         {
             var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
-
+            var lastSchema = db.Schemas.Where(p => p.Table == tableName).Last();
             if (db.Schemas.Where(p => p.Table == tableName).FirstOrDefault(c => c.ColumnType == "PK") != null)
                 id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault(c => c.ColumnType == "PK").Column;
 
@@ -64,9 +64,25 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        private IRepository<{0}> {0}Repository = new Repository<{0}>();", className);
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}", className);
-            outFile.WriteLine("        public IQueryable<{0}> Get{0}List()", className);
+            outFile.WriteLine("        public IQueryable<{0}Model> Get{0}List()", className);
             outFile.WriteLine("        {");
-            outFile.WriteLine("            return {0}Repository.FindAll();", className);
+            outFile.WriteLine("            return {0}Repository.FindAll().Select(x => new {0}Model", className);
+            outFile.WriteLine("            {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.Equals(lastSchema))
+                {
+                    outFile.WriteLine("                {0} = x.{0}", columnName);
+                }
+                else
+                {
+                    outFile.WriteLine("                {0} = x.{0},", columnName);
+                }
+            }
+
+            outFile.WriteLine("            });");
             outFile.WriteLine("        }");
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}", className);
@@ -78,7 +94,23 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // GET: api/{0}", className);
             outFile.WriteLine("        public IQueryable<{0}> Get{0}List(int page, int pageSize)", className);
             outFile.WriteLine("        {");
-            outFile.WriteLine("            return {0}Repository.FindAll().Skip(page * pageSize).Take(pageSize);", className);
+            outFile.WriteLine("            return {0}Repository.FindAll().Select(x => new {0}Model", className);
+            outFile.WriteLine("            {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.Equals(lastSchema))
+                {
+                    outFile.WriteLine("                {0} = x.{0}", columnName);
+                }
+                else
+                {
+                    outFile.WriteLine("                {0} = x.{0},", columnName);
+                }
+            }
+
+            outFile.WriteLine("            }).Skip(page * pageSize).Take(pageSize);");
             outFile.WriteLine("        }");
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}/5", className);

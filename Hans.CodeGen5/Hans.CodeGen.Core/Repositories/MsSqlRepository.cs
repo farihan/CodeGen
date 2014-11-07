@@ -269,5 +269,29 @@ namespace Hans.CodeGen.Core.DataProvider
                 return relations;
             }
         }
+
+        public List<string> GetBaseTableNames()
+        {
+            using (var conn = new SqlConnection(connectionString))
+            {
+                var sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'";
+                var cmd = new SqlCommand(sql, conn);
+                cmd.CommandType = CommandType.Text;
+
+                conn.Open();
+
+                IDataReader reader = cmd.ExecuteReader();
+
+                var list = new List<string>();
+
+                while (reader.Read())
+                {
+                    var s = reader["table_name"].ToString();
+                    list.Add(s);
+                }
+
+                return list;
+            }
+        }
     }
 }
