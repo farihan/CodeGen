@@ -111,7 +111,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        public int PageIndex {0}", property);
             outFile.WriteLine("        public string Sort {0}", property);
             outFile.WriteLine("        public bool IsAsc {0}", property);
-            outFile.WriteLine("        public IList<{0}> {0}s {1}", className, property);
+            outFile.WriteLine("        public IList<{0}> {0}List {1}", className, property);
             outFile.WriteLine();
             outFile.WriteLine("        public {0}Model()", className);
             outFile.WriteLine("        {");
@@ -119,7 +119,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            CurrentPage = 0;");
             outFile.WriteLine("            PageSize = 0;");
             outFile.WriteLine("            PageIndex = 0;");
-            outFile.WriteLine("            {0}s = new List<{0}>();", className);
+            outFile.WriteLine("            {0}List = new List<{0}>();", className);
             outFile.WriteLine("        }");
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
