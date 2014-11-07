@@ -135,7 +135,28 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("                return BadRequest(ModelState);");
             outFile.WriteLine("            }");
             outFile.WriteLine("");
-            outFile.WriteLine("            await {0}Repository.SaveAsync({1});", className, className.ToLower());
+            outFile.WriteLine("            var model = new {0}()", className);
+            outFile.WriteLine("            {");
+            
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.ColumnType != "PK")
+                {
+                    if (s.Equals(lastSchema))
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0}", columnName, className.ToLower());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0},", columnName, className.ToLower());
+                    }
+                }
+            }
+
+            outFile.WriteLine("            };");
+            outFile.WriteLine("");
+            outFile.WriteLine("            await {0}Repository.SaveAsync(model);", className, className.ToLower());
             outFile.WriteLine("");
             outFile.WriteLine("            return CreatedAtRoute(\"DefaultApi\", new {{ id = {0}.{1} }}, {0});", className.ToLower(), id);
             outFile.WriteLine("        }");
@@ -171,11 +192,35 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("");
             outFile.WriteLine("            try");
             outFile.WriteLine("            {");
+            outFile.WriteLine("                var model = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
+            outFile.WriteLine("");
+            outFile.WriteLine("                if (model != null)");
+            outFile.WriteLine("                {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.ColumnType != "PK")
+                {
+                    if (s.Equals(lastSchema))
+                    {
+                        outFile.WriteLine("                    model.{0} = {1}.{0}", columnName, className.ToLower());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                    model.{0} = {1}.{0},", columnName, className.ToLower());
+                    }
+                }
+            }
+
+            outFile.WriteLine("                }");
+            outFile.WriteLine("");
             outFile.WriteLine("                await {0}Repository.UpdateAsync({1});", className, className.ToLower());
             outFile.WriteLine("            }");
             outFile.WriteLine("            catch (DbUpdateConcurrencyException)");
             outFile.WriteLine("            {");
             outFile.WriteLine("                var {0}ToEdit = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
+            outFile.WriteLine("");
             outFile.WriteLine("                if ({0}ToEdit != null)", className.ToLower());
             outFile.WriteLine("                {");
             outFile.WriteLine("                    return NotFound();");
