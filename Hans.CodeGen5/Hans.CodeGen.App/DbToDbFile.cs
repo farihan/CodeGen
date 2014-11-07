@@ -39,7 +39,7 @@ namespace Hans.CodeGen.App
                 Folder.Create(db.OutputDirectory);
                 var outFile = System.IO.File.CreateText(fileName);
 
-                foreach (var tableName in db.TableNames)
+                foreach (var tableName in db.TableNames.OrderBy(tableName => tableName))
                 {
                     outFile.WriteLine("{0} {1}", DbLineType.Table, tableName.Replace(" ", "_"));
 

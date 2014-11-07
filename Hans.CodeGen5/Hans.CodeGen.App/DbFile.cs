@@ -5,6 +5,7 @@ using System.Text;
 using Hans.CodeGen.Core.Domains;
 using Hans.CodeGen.Core.Commons;
 using System.IO;
+using Hans.CodeGen.Core.Utils;
 
 namespace Hans.CodeGen.App
 {
@@ -36,6 +37,8 @@ namespace Hans.CodeGen.App
 
         private static string GetTableName(string[] lines, string tableName)
         {
+            var singularization = new Singularization();
+
             foreach (var line in lines)
             {
                 var words = line.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries);
@@ -43,7 +46,7 @@ namespace Hans.CodeGen.App
                 {
                     if (words.Count() > 1)
                     {
-                        tableName = words[1].ToString();
+                        tableName = singularization.Singularize(words[1].ToString());
                         break;
                     }
                 }
