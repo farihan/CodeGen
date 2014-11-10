@@ -56,6 +56,7 @@
     <Compile Include="Repositories\MsSqlRepository.cs" />
     <Compile Include="Repositories\OracleRepository.cs" />
     <Compile Include="Utils\Folder.cs" />
+    <Compile Include="Utils\Pluralization.cs" />
     <Compile Include="Utils\Singularization.cs" />
     <Compile Include="Utils\StringExtension.cs" />
     <Compile Include="Utils\TimedLog.cs" />
