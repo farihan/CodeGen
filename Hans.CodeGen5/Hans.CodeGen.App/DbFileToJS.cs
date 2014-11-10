@@ -226,13 +226,13 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        return index + 1 + (self.pageSize() * self.pageIndex());");
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.getListSize = function () {");
-            outFile.WriteLine("        $.getJSON(url + 'get{0}listsize',", className.ToLower());
+            outFile.WriteLine("        $.getJSON(url + 'getsize',", className.ToLower());
             outFile.WriteLine("            function (data) {");
             outFile.WriteLine("                self.listSize(data);");
             outFile.WriteLine("            });");
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.getFilteredList = function () {");
-            outFile.WriteLine("        $.getJSON(url + 'get{0}listby',", className.ToLower());
+            outFile.WriteLine("        $.getJSON(url + 'getallby',", className.ToLower());
             outFile.WriteLine("            { page: self.pageIndex(), pageSize: self.pageSize() },");
             outFile.WriteLine("            function (data) {");
             outFile.WriteLine("                self.filteredList.removeAll();");
@@ -242,7 +242,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            });");
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.getModel = function (id) {");
-            outFile.WriteLine("        $.getJSON(url + 'get{0}',", className.ToLower());
+            outFile.WriteLine("        $.getJSON(url + 'get',", className.ToLower());
             outFile.WriteLine("            { id: id },");
             outFile.WriteLine("            function (data) {");
             outFile.WriteLine("                self.model(new {0}Model(data));", className.LoweredFirstChar());
@@ -250,7 +250,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.createModel = function () {");
             outFile.WriteLine("        $.ajax({");
-            outFile.WriteLine("            url: url + 'create{0}',", className.ToLower());
+            outFile.WriteLine("            url: url + 'create',", className.ToLower());
             outFile.WriteLine("            type: 'post',");
             outFile.WriteLine("            dataType: 'json',");
             outFile.WriteLine("            data: ko.toJSON(self.model),");
@@ -266,7 +266,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.editModel = function () {");
             outFile.WriteLine("        $.ajax({");
-            outFile.WriteLine("            url: url + 'edit{0}',", className.ToLower());
+            outFile.WriteLine("            url: url + 'edit',", className.ToLower());
             outFile.WriteLine("            type: 'post',");
             outFile.WriteLine("            dataType: 'json',");
             outFile.WriteLine("            data: ko.toJSON(self.model),");
@@ -282,7 +282,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    };");
             outFile.WriteLine("    self.deleteModel = function () {");
             outFile.WriteLine("        $.ajax({");
-            outFile.WriteLine("            url: url + 'delete{0}',", className.ToLower());
+            outFile.WriteLine("            url: url + 'delete',", className.ToLower());
             outFile.WriteLine("            type: 'post',");
             outFile.WriteLine("            dataType: 'json',");
             outFile.WriteLine("            data: ko.toJSON(self.model),");
@@ -295,7 +295,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("                self.onLoad();");
             outFile.WriteLine("                var currentMaxPage = Math.ceil((self.listSize() - 1) / self.pageSize()) - 1;");
             outFile.WriteLine("                self.moveToPage(currentMaxPage);");
-            outFile.WriteLine("                //self.moveToPage(0);");
             outFile.WriteLine("            }");
             outFile.WriteLine("        });");
             outFile.WriteLine("    };");
@@ -340,7 +339,7 @@ namespace Hans.CodeGen.App
             foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
             {
                 outFile.WriteLine("    self.getAvailable{0}List = function () {{", r.ParentTable.UpperedFirstChar());
-                outFile.WriteLine("        $.getJSON('/{0}/get{0}list',", r.ParentTable.ToLower());
+                outFile.WriteLine("        $.getJSON('/{0}/getall',", r.ParentTable.ToLower());
                 outFile.WriteLine("            function (data) {");
                 outFile.WriteLine("                self.available{0}List.removeAll();", r.ParentTable.UpperedFirstChar());
                 outFile.WriteLine("                $.each(data, function (index, item) {");

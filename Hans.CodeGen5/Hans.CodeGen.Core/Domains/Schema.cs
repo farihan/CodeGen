@@ -50,7 +50,7 @@ namespace Hans.CodeGen.Core.Domains
                     type = Commons.MsSqlDataType.Char;
                     break;
                 case Commons.MsSqlDataType.Money:
-                    type = Commons.MsSqlDataType.Double;
+                    type = Commons.MsSqlDataType.Decimal;//type = Commons.MsSqlDataType.Double;
                     break;
                 case Commons.MsSqlDataType.Decimal:
                     type = Commons.MsSqlDataType.Decimal;
