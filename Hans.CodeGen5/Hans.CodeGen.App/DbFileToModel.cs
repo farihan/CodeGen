@@ -40,6 +40,8 @@ namespace Hans.CodeGen.App
 
         private static void WriterForModel(string path, string tableName, string className, DatabaseInfo db)
         {
+            var singularization = new Singularization();
+            var pluralization = new Pluralization();
             var property = "{ get; set; }";
             var textPath = string.Format(@"{0}\{1}Model.cs", path, className);
 
@@ -97,21 +99,25 @@ namespace Hans.CodeGen.App
             {
                 if (r.ParentTable == tableName)
                     break;
-                outFile.WriteLine("        public {0} {0} {1}", r.ParentTable.UpperedFirstChar(), property);
+                outFile.WriteLine("        public {0} {0} {1}", singularization.Singularize(r.ParentTable.UpperedFirstChar()), property);
             }
 
             foreach (var r in db.Relations.Where(p => p.ParentTable == tableName).OrderBy(p => p.ChildTable))
             {
-                outFile.WriteLine("        public IList<{0}> {0}List {1}", r.ChildTable.UpperedFirstChar(), property);
+                outFile.WriteLine("        public IList<{0}> {1} {2}", 
+                    singularization.Singularize(r.ChildTable.UpperedFirstChar()),
+                    pluralization.Pluralize(r.ChildTable.UpperedFirstChar()), 
+                    property);
             }
 
+            outFile.WriteLine("");
             outFile.WriteLine("        public int TotalPages {0}", property);
             outFile.WriteLine("        public int CurrentPage {0}", property);
             outFile.WriteLine("        public int PageSize {0}", property);
             outFile.WriteLine("        public int PageIndex {0}", property);
             outFile.WriteLine("        public string Sort {0}", property);
             outFile.WriteLine("        public bool IsAsc {0}", property);
-            outFile.WriteLine("        public IList<{0}> {0}List {1}", className, property);
+            outFile.WriteLine("        public IList<{0}> {1} {2}", className, pluralization.Pluralize(className), property);
             outFile.WriteLine();
             outFile.WriteLine("        public {0}Model()", className);
             outFile.WriteLine("        {");
@@ -119,7 +125,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            CurrentPage = 0;");
             outFile.WriteLine("            PageSize = 0;");
             outFile.WriteLine("            PageIndex = 0;");
-            outFile.WriteLine("            {0}List = new List<{0}>();", className);
+            outFile.WriteLine("            {0} = new List<{1}>();", pluralization.Pluralize(className), className);
             outFile.WriteLine("        }");
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
