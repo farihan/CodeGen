@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Hans.CodeGen.App
 {
-    public class DbFileToJS
+    public class DbFileToKnockoutJS
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Javascripts);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.KnockoutJS);
 
             if (string.IsNullOrEmpty(path))
             {

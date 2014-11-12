@@ -21,6 +21,7 @@ namespace Hans.CodeGen.Core.Commons
         public const string View = "View";
         public const string Views = "Views";
         public const string Knockout = "Knockout";
+        public const string KnockoutJS = "KnockoutJS";
         public const string Test = "Test";
         public const string Tests = "Tests";
         public const string Service = "Service";

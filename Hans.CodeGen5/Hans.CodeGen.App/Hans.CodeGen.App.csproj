@@ -47,7 +47,7 @@
     <Compile Include="DbFileToController.cs" />
     <Compile Include="DbFileToDomain.cs" />
     <Compile Include="DbFileToErrorHandling.cs" />
-    <Compile Include="DbFileToJS.cs" />
+    <Compile Include="DbFileToKnockoutJS.cs" />
     <Compile Include="DbFileToKnockoutUI.cs" />
     <Compile Include="DbFileToModel.cs" />
     <Compile Include="DbFileToRepository.cs" />
