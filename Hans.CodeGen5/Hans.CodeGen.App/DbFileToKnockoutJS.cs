@@ -110,7 +110,6 @@ namespace Hans.CodeGen.App
             foreach (var s in db.Schemas.Where(p => p.Table == tableName))
             {
                 var columnName = s.Column;
-                //outFile.WriteLine("    this.{0} = ko.observable(data.{1});", columnName.LoweredFirstChar(), columnName);
                 
                 if (s.ColumnType == "FK")
                 {
@@ -338,12 +337,12 @@ namespace Hans.CodeGen.App
             
             foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
             {
-                outFile.WriteLine("    self.getAvailable{0}List = function () {{", r.ParentTable.UpperedFirstChar());
+                outFile.WriteLine("    self.getAvailable{0} = function () {{", r.ParentTable.UpperedFirstChar());
                 outFile.WriteLine("        $.getJSON('/{0}/getall',", r.ParentTable.ToLower());
                 outFile.WriteLine("            function (data) {");
-                outFile.WriteLine("                self.available{0}List.removeAll();", r.ParentTable.UpperedFirstChar());
+                outFile.WriteLine("                self.available{0}.removeAll();", r.ParentTable.UpperedFirstChar());
                 outFile.WriteLine("                $.each(data, function (index, item) {");
-                outFile.WriteLine("                    self.available{0}List.push({{ ID: item.{1}, Name: item.{1} }});", r.ParentTable.UpperedFirstChar(), r.FkConstraintColumn);
+                outFile.WriteLine("                    self.available{0}.push({{ ID: item.{1}, Name: item.{1} }});", r.ParentTable.UpperedFirstChar(), r.FkConstraintColumn);
                 outFile.WriteLine("                });");
                 outFile.WriteLine("            });");
                 outFile.WriteLine("    };");
@@ -354,7 +353,7 @@ namespace Hans.CodeGen.App
 
             foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
             {
-                outFile.WriteLine("    self.getAvailable{0}List();", r.ParentTable.UpperedFirstChar());
+                outFile.WriteLine("    self.getAvailable{0}();", r.ParentTable.UpperedFirstChar());
             }
 
             outFile.WriteLine("}");
