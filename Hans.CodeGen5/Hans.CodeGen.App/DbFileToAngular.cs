@@ -81,18 +81,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            return {0}Repository.FindAll().Select(x => new {0}Model", className);
             outFile.WriteLine("            {");
 
-            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
-            {
-                var columnName = s.Column;
-                if (s.Equals(lastSchema))
-                {
-                    outFile.WriteLine("                {0} = x.{0}", columnName);
-                }
-                else
-                {
-                    outFile.WriteLine("                {0} = x.{0},", columnName);
-                }
-            }
+            PopulateModel(tableName, db, lastSchema, outFile);
 
             outFile.WriteLine("            });");
             outFile.WriteLine("        }");
@@ -100,7 +89,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // GET: api/{0}", className);
             outFile.WriteLine("        public IQueryable<{0}Model>  GetAllBy(int page, int pageSize, string sort = \"{1}\", bool asc = true)", className, id.ToString().ToLower());
             outFile.WriteLine("        {");
-            outFile.WriteLine("            var {0} = db.{1}.OrderBy(x => x.{2});", pluralization.Pluralize(className.ToLower()), className, id);
+            outFile.WriteLine("            var {0} = {1}Repository.FindAll().OrderBy(x => x.{2});", pluralization.Pluralize(className.ToLower()), className, id);
             outFile.WriteLine();
             outFile.WriteLine("            switch (sort.ToLower())");
             outFile.WriteLine("            {");
@@ -119,18 +108,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            return {0}.Select(x => new {1}Model", pluralization.Pluralize(className.ToLower()), className);
             outFile.WriteLine("            {");
 
-            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
-            {
-                var columnName = s.Column;
-                if (s.Equals(lastSchema))
-                {
-                    outFile.WriteLine("                {0} = x.{0}", columnName);
-                }
-                else
-                {
-                    outFile.WriteLine("                {0} = x.{0},", columnName);
-                }
-            }
+            PopulateModel(tableName, db, lastSchema, outFile);
 
             outFile.WriteLine("            }).Skip(page * pageSize).Take(pageSize);");
             outFile.WriteLine("        }");
@@ -261,6 +239,28 @@ namespace Hans.CodeGen.App
             outFile.Close();
 
             Console.Write(string.Format("\n{0}ApiController.cs created", className));
+        }
+
+        private static void PopulateModel(string tableName, DatabaseInfo db, Schema lastSchema, StreamWriter outFile)
+        {
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.Equals(lastSchema))
+                {
+                    if (s.IsNullable == "NULL" && s.MsSqlDataType() != "string")
+                        outFile.WriteLine("                {0} = x.{0}.HasValue ? x.{0}.Value : {1}.MinValue", columnName, s.MsSqlDataType());
+                    else
+                        outFile.WriteLine("                {0} = x.{0}", columnName);
+                }
+                else
+                {
+                    if (s.IsNullable == "NULL" && s.MsSqlDataType() != "string")
+                        outFile.WriteLine("                {0} = x.{0}.HasValue ? x.{0}.Value : {1}.MinValue,", columnName, s.MsSqlDataType());
+                    else
+                        outFile.WriteLine("                {0} = x.{0},", columnName);
+                }
+            }
         }
     }
 }
