@@ -131,7 +131,7 @@ namespace Hans.CodeGen.App
             var outFile = File.CreateText(textPath);
 
             outFile.WriteLine("@{");
-            outFile.WriteLine("    ViewBag.Title = Index - {0};", className);
+            outFile.WriteLine("    ViewBag.Title = \"Index - {0};\"", className);
             outFile.WriteLine("    Layout = \"~/Views/Shared/_Layout.cshtml\";");
             outFile.WriteLine("}");
             outFile.WriteLine("");
