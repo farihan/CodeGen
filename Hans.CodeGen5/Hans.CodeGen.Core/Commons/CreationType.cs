@@ -30,6 +30,10 @@ namespace Hans.CodeGen.Core.Commons
         public const string Repositories = "Repositories";
         public const string Javascript = "Javascript";
         public const string Javascripts = "Javascripts";
+        public const string Angular = "Angular";
+        public const string AngularApi = "AngularApi";
+        public const string AngularJS = "AngularJS";
+        public const string AngularUI = "AngularUI";
         // file
         public const string Error = "Error";
         public const string Shared = "Shared";

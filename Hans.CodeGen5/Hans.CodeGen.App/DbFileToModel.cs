@@ -23,8 +23,6 @@ namespace Hans.CodeGen.App
 
             Folder.Create(path);
 
-            var orders = db.Schemas.Where(x => x.Table == "Products").ToList();
-
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
                 .Distinct())
