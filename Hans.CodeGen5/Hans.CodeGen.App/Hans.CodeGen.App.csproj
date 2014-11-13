@@ -42,7 +42,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbFileToAngular.cs" />
+    <Compile Include="DbFileToAngularApi.cs" />
+    <Compile Include="DbFileToAngularJS.cs" />
+    <Compile Include="DbFileToAngularUI.cs" />
     <Compile Include="DbFileToApiController.cs" />
     <Compile Include="DbFile.cs" />
     <Compile Include="DbFileToController.cs" />
