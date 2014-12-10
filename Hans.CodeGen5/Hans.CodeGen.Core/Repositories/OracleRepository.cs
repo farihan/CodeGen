@@ -82,7 +82,7 @@ namespace Hans.CodeGen.Core.DataProvider
             throw new NotImplementedException();
         }
 
-        public List<Domains.Constraint> GetConstraints()
+        public List<Domains.Constraint> GetConstraints(string constraintType)
         {
             using (var conn = new OracleConnection(connectionString))
             {

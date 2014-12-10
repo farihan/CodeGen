@@ -21,7 +21,9 @@ namespace Hans.CodeGen.App
                     var repo = new MsSqlRepository(ConfigurationManager.ConnectionStrings["0"].ConnectionString);
 
                     db.Schemas = repo.GetSchemas();
-                    db.Constraints = repo.GetConstraints();
+                    db.Constraints = new List<Constraint>();
+                    db.Constraints.AddRange(repo.GetConstraints("pk"));
+                    db.Constraints.AddRange(repo.GetConstraints("fk"));
                     db.Relations = repo.GetRelations();
                     db.TableNames = repo.GetBaseTableNames();
                 }
@@ -64,7 +66,7 @@ namespace Hans.CodeGen.App
                                 s.DataType,
                                 string.IsNullOrEmpty(s.MaxLength) ? "" : " " + s.MaxLength,
                                 SetNullable(s.IsNullable),
-                                SetPk(s.Column, s.IsNullable, db.Relations.Where(x => x.ChildTable == tableName).ToList()));
+                                SetKey(s.Column, s.IsNullable, db.Constraints.Where(x => x.Table == tableName).ToList()));
                         }
                     }
 
@@ -99,11 +101,11 @@ namespace Hans.CodeGen.App
             else
                 return " NULL";
         }
-        private static string SetPk(string column, string nullable, List<Relation> relations)
+        private static string SetKey(string column, string nullable, List<Constraint> constraints)
         {
-            if (column.ToUpper().Contains("ID") && nullable == "NO" && (relations.FirstOrDefault(x => x.FkConstraintColumn == column) == null))
+            if (constraints.FirstOrDefault(x => x.Column == column && x.ConstraintType == "PK") != null)
                 return "PK";
-            else if (relations.FirstOrDefault(x => x.FkConstraintColumn == column) != null)
+            else if (constraints.FirstOrDefault(x => x.Column == column && x.ConstraintType == "FK") != null)
                 return "FK";
             else
                 return "NONE";

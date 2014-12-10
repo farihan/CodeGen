@@ -10,5 +10,6 @@ namespace Hans.CodeGen.Core.Domains
         public string Table { get; set; }
         public string Column { get; set; }
         public string Name { get; set; }
+        public string ConstraintType { get; set; }
     }
 }

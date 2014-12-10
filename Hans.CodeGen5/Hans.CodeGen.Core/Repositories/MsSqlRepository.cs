@@ -151,15 +151,29 @@ namespace Hans.CodeGen.Core.DataProvider
             }
         }
 
-        public List<Domains.Constraint> GetConstraints()
+        public List<Domains.Constraint> GetConstraints(string constraintType)
         {
             using (var conn = new SqlConnection(connectionString))
             {
-                //var sql = "SELECT * FROM INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE";
-                var sql = @"select 	c.TABLE_NAME, c.COLUMN_NAME, pk.CONSTRAINT_NAME
-                            from INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk, INFORMATION_SCHEMA.KEY_COLUMN_USAGE c
-                            where c.TABLE_NAME = pk.TABLE_NAME
-                            and	c.CONSTRAINT_NAME = pk.CONSTRAINT_NAME";
+                var sql = string.Empty;
+
+                if (constraintType.ToLower() == "pk")
+                {
+                    sql = @"SELECT *
+                        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                        WHERE OBJECTPROPERTY(OBJECT_ID(constraint_name), 'IsPrimaryKey') = 1";
+                }
+
+                if (constraintType.ToLower() == "fk")
+                {
+                    sql = @"select 
+                            name,
+                            INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME,
+                            INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME
+                        from sys.foreign_keys
+                        inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                        on object_name(sys.foreign_keys.parent_object_id) = INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME";
+                }
 
                 var cmd = new SqlCommand(sql, conn);
                 cmd.CommandType = CommandType.Text;
@@ -173,10 +187,22 @@ namespace Hans.CodeGen.Core.DataProvider
                 while (reader.Read())
                 {
                     var c = new Domains.Constraint();
-                    c.Table = reader["table_name"].ToString();
-                    c.Column = reader["column_name"].ToString();
-                    c.Name = reader["constraint_name"].ToString();
+                    if (constraintType.ToLower() == "pk")
+                    {
+                        c.Table = reader["table_name"].ToString();
+                        c.Column = reader["column_name"].ToString();
+                        c.Name = reader["constraint_name"].ToString();
+                        c.ConstraintType = constraintType.ToUpper();
+                    }
 
+                    if (constraintType.ToLower() == "fk")
+                    {
+                        c.Table = reader["table_name"].ToString();
+                        c.Column = reader["column_name"].ToString();
+                        c.Name = reader["name"].ToString();
+                        c.ConstraintType = constraintType.ToUpper();
+                    }
+                    
                     constraints.Add(c);
                 }
 

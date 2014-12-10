@@ -12,7 +12,7 @@ namespace Hans.CodeGen.Core.DataProvider
         List<Schema> GetSchemasBy(string tableName);
         List<Schema> GetSchemasForBaseTable();
         List<Schema> GetSchemasForBaseTableBy(string tableName);
-        List<Constraint> GetConstraints();
+        List<Constraint> GetConstraints(string constraintType);
         List<Relation> GetRelations();
     }
 }
