@@ -101,6 +101,7 @@ namespace Hans.CodeGen.App
             else
                 return " NULL";
         }
+
         private static string SetKey(string column, string nullable, List<Constraint> constraints)
         {
             if (constraints.FirstOrDefault(x => x.Column == column && x.ConstraintType == "PK") != null)

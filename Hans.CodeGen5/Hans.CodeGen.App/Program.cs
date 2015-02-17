@@ -64,17 +64,17 @@ namespace Hans.CodeGen.App
         {
             var db = new DatabaseInfo();
 
-            db.NamespaceCs = ConfigurationManager.AppSettings[KeyType.NamespaceCs].ToString();
+            db.ApplicationName = ConfigurationManager.AppSettings[KeyType.ApplicationName].ToString();
+            db.NamespaceCs = string.Format(ConfigurationManager.AppSettings[KeyType.NamespaceCs].ToString(), db.ApplicationName);
             db.DatabaseType = ConfigurationManager.AppSettings[KeyType.DatabaseType].ToString();
             db.InputDirectory = ConfigurationManager.AppSettings[KeyType.InputDirectory].ToString();
-            db.InputAndOutputDbFile = ConfigurationManager.AppSettings[KeyType.InputAndOutputDbFile].ToString();
-            db.InputUIFile = ConfigurationManager.AppSettings[KeyType.InputUIFile].ToString();
+            db.InputAndOutputDbFile = string.Format(ConfigurationManager.AppSettings[KeyType.InputAndOutputDbFile].ToString(), db.ApplicationName);
+            db.InputUIFile = string.Format(ConfigurationManager.AppSettings[KeyType.InputUIFile].ToString(), db.ApplicationName);
             db.OutputDirectory = ConfigurationManager.AppSettings[KeyType.OutputDirectory].ToString();
             db.Owner = ConfigurationManager.AppSettings[KeyType.Owner].ToString();
             db.ReadFromDb = ConfigurationManager.AppSettings[KeyType.ReadFromDb].ToString();
             db.ReadFromDbFile = ConfigurationManager.AppSettings[KeyType.ReadFromDbFile].ToString();
             db.RemoveChars = ConfigurationManager.AppSettings[KeyType.RemoveChars].ToString();
-            db.ApplicationName = ConfigurationManager.AppSettings[KeyType.ApplicationName].ToString();
 
             return db;
         }
