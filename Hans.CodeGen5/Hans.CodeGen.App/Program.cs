@@ -49,11 +49,12 @@ namespace Hans.CodeGen.App
                     DbFileToUI.Generate(db);
                     // ko
                     DbFileToKnockoutApi.Generate(db);
-                    DbFileToKnockoutUI.Generate(db);
                     DbFileToKnockoutJS.Generate(db);
+                    DbFileToKnockoutUI.Generate(db);
                     // angular
                     DbFileToAngularApi.Generate(db);
                     DbFileToAngularJS.Generate(db);
+                    DbFileToAngularUI.Generate(db);
                     
                     DbFileToErrorHandling.Generate(db);
                     DbFileToGlobal.Generate(db);
