@@ -34,8 +34,9 @@ namespace Hans.CodeGen.App
                 // create
                 // edit
                 // delete
-                WriterForErrorController(path, db);
             }
+
+            WriterForErrorController(path, db);
 
             Console.WriteLine();
         }
@@ -246,7 +247,7 @@ namespace Hans.CodeGen.App
 
             outFile.Close();
 
-            Console.Write(string.Format("\n{0}ApiController.cs created", className));
+            Console.Write(string.Format("\n{0} created", textPath));
         }
 
         private static void WriterForErrorController(string path, DatabaseInfo db)
@@ -277,7 +278,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
             outFile.Close();
 
-            Console.Write(textPath);
+            Console.Write(string.Format("\n{0} created", textPath));
         }
     }
 }

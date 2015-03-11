@@ -81,7 +81,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
             outFile.Close();
 
-            Console.Write(textPath);
+            Console.Write(string.Format("\n{0} created", textPath));
         }
 
         private static void WriterForImplementation(string path, DatabaseInfo db)
@@ -186,7 +186,8 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
 
             outFile.Close();
-            Console.Write(textPath);
+
+            Console.Write(string.Format("\n{0} created", textPath));
         }
     }
 }

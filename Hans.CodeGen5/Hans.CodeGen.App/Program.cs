@@ -40,18 +40,23 @@ namespace Hans.CodeGen.App
                 {
                     DbFile.Read(db);
                     CheckDatabaseInfo(db);
+
                     DbFileToRepository.Generate(db);
                     DbFileToDomain.Generate(db);
                     DbFileToModel.Generate(db);
+                    // razor
                     DbFileToController.Generate(db);
-                    DbFileToKnockoutApi.Generate(db);
-                    DbFileToErrorHandling.Generate(db);
                     DbFileToUI.Generate(db);
-                    DbFileToKnockoutJS.Generate(db);
+                    // ko
+                    DbFileToKnockoutApi.Generate(db);
                     DbFileToKnockoutUI.Generate(db);
-
+                    DbFileToKnockoutJS.Generate(db);
+                    // angular
                     DbFileToAngularApi.Generate(db);
                     DbFileToAngularJS.Generate(db);
+                    
+                    DbFileToErrorHandling.Generate(db);
+                    DbFileToGlobal.Generate(db);
                 }
             }
 

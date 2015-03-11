@@ -45,6 +45,7 @@
     <Compile Include="DbFileToAngularApi.cs" />
     <Compile Include="DbFileToAngularJS.cs" />
     <Compile Include="DbFileToAngularUI.cs" />
+    <Compile Include="DbFileToGlobal.cs" />
     <Compile Include="DbFileToKnockoutApi.cs" />
     <Compile Include="DbFile.cs" />
     <Compile Include="DbFileToController.cs" />

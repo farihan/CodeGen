@@ -31,9 +31,9 @@ namespace Hans.CodeGen.App
 
                 // create controllers
                 WriterForController(path, tableName, className, db);
-
-                WriterForErrorController(path, db);
             }
+
+            WriterForErrorController(path, db);
 
             Console.WriteLine();
         }
@@ -82,9 +82,9 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
 
-            outFile.Close(); 
-            
-            Console.Write(string.Format("\n{0}Controller.cs created", className));
+            outFile.Close();
+
+            Console.Write(string.Format("\n{0} created", textPath));
         }
 
         private static void WriterForDelete(string className, StreamWriter outFile)
@@ -308,8 +308,8 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
             outFile.Close();
-
-            Console.Write(textPath);
+            
+            Console.Write(string.Format("\n{0} created", textPath));
         }
     }
 }

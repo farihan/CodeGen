@@ -30,17 +30,14 @@ namespace Hans.CodeGen.App
             WriterForFilterConfig(path1, db);
             WriterForActionFilter(path1, db);
             WriterForRouteConfig(path1, db);
-            WriterForGlobal(path1, db);
 
             WriterForFilterConfig(path2, db);
             WriterForActionFilter(path2, db);
             WriterForRouteConfig(path2, db);
-            WriterForGlobal(path2, db);
 
             WriterForFilterConfig(path3, db);
             WriterForActionFilter(path3, db);
             WriterForRouteConfig(path3, db);
-            WriterForGlobal(path3, db);
 
             Console.WriteLine();
         }
@@ -66,7 +63,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
             outFile.Close();
 
-            Console.Write(textPath);
+            Console.Write(string.Format("\n{0} created", textPath));
         }
 
         private static void WriterForActionFilter(string path, DatabaseInfo db)
@@ -91,7 +88,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
             outFile.Close();
 
-            Console.Write(textPath);
+            Console.Write(string.Format("\n{0} created", textPath));
         }
 
         private static void WriterForRouteConfig(string path, DatabaseInfo db)
@@ -129,113 +126,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("}");
             outFile.Close();
 
-            Console.Write(textPath);
-        }
-
-        private static void WriterForGlobal(string path, DatabaseInfo db)
-        {
-            var textPath = string.Format(@"{0}\Global.asax.cs", path);
-            var outFile = File.CreateText(textPath);
-
-            outFile.WriteLine("using System;");
-            outFile.WriteLine("using System.Collections.Generic;");
-            outFile.WriteLine("using System.Linq;");
-            outFile.WriteLine("using System.Web;");
-            outFile.WriteLine("using System.Web.Http;");
-            outFile.WriteLine("using System.Web.Mvc;");
-            outFile.WriteLine("using System.Web.Optimization;");
-            outFile.WriteLine("using System.Web.Routing;");
-            outFile.WriteLine("");
-            outFile.WriteLine("namespace {0}", db.NamespaceCs);
-            outFile.WriteLine("{");
-            outFile.WriteLine("    // Note: For instructions on enabling IIS6 or IIS7 classic mode,");
-            outFile.WriteLine("    // visit http://go.microsoft.com/?LinkId=9394801");
-            outFile.WriteLine("");
-            outFile.WriteLine("    public class MvcApplication : System.Web.HttpApplication");
-            outFile.WriteLine("    {");
-            outFile.WriteLine("        // [to be added]");
-            outFile.WriteLine("        protected void Application_Error(object sender, EventArgs e)");
-            outFile.WriteLine("        {");
-            outFile.WriteLine("            Exception exception = Server.GetLastError();");
-            outFile.WriteLine("            HttpException httpException = exception as HttpException;");
-            outFile.WriteLine("            // Log this exception with your logger");
-            outFile.WriteLine("        }");
-            outFile.WriteLine("    }");
-            outFile.WriteLine("}");
-            outFile.Close();
-
-            Console.Write(textPath);
-        }
-
-        private static void WriterForErrorCshtml(string path, DatabaseInfo db)
-        {
-            var textPath = string.Format(@"{0}\Error.cshtml", path);
-            var outFile = File.CreateText(textPath);
-
-            outFile.WriteLine("@model System.Web.Mvc.HandleErrorInfo");
-            outFile.WriteLine("@{");
-            outFile.WriteLine("    ViewBag.Title = \"Error\";");
-            outFile.WriteLine("}");
-            outFile.WriteLine("<h1 class=\"error\">");
-            outFile.WriteLine("    Error.</h1>");
-            outFile.WriteLine("<h2 class=\"error\">");
-            outFile.WriteLine("    An error occurred while processing your request.</h2>");
-            outFile.WriteLine("@{");
-            outFile.WriteLine("    if (Request.IsLocal)");
-            outFile.WriteLine("    {");
-            outFile.WriteLine("        if (@Model != null && @Model.Exception != null)");
-            outFile.WriteLine("        {");
-            outFile.WriteLine("    <h3>");
-            outFile.WriteLine("        Exception was : @Model.Exception.Message</h3>");
-            outFile.WriteLine("    <h4>");
-            outFile.WriteLine("        Stack Trace: @Model.Exception.StackTrace</h4>");
-            outFile.WriteLine("        }");
-            outFile.WriteLine("        else");
-            outFile.WriteLine("        {");
-            outFile.WriteLine("    <h3>");
-            outFile.WriteLine("        Exception was null</h3>");
-            outFile.WriteLine("        }");
-            outFile.WriteLine("    }");
-            outFile.WriteLine("    else");
-            outFile.WriteLine("    {");
-            outFile.WriteLine("    <h4>");
-            outFile.WriteLine("        The Error has been reported to the Administrator</h4>");
-            outFile.WriteLine("    }");
-            outFile.WriteLine("}");
-            outFile.Close();
-
-            Console.Write(textPath);
-        }
-
-        private static void WriterForFailCshtml(string path, DatabaseInfo db)
-        {
-            var textPath = string.Format(@"{0}\Fail.cshtml", path);
-            var outFile = File.CreateText(textPath);
-
-            outFile.WriteLine("@model System.Web.Mvc.HandleErrorInfo");
-            outFile.WriteLine("@{");
-            outFile.WriteLine("    ViewBag.Title = \"Fail\";");
-            outFile.WriteLine("}");
-            outFile.WriteLine("");
-            outFile.WriteLine("<h1 class=\"error\">");
-            outFile.WriteLine("    Fail</h1>");
-            outFile.WriteLine("");
-            outFile.WriteLine("@if (@Model != null)");
-            outFile.WriteLine("{");
-            outFile.WriteLine("");
-            outFile.WriteLine("    <h2 class=\"error\">@Model.Exception</h2>");
-            outFile.WriteLine("}");
-            outFile.WriteLine("else");
-            outFile.WriteLine("{");
-            outFile.WriteLine("    <h2>");
-            outFile.WriteLine("        Oops! Server Returned a 404 (Page Not Found)!");
-            outFile.WriteLine("        <br />");
-            outFile.WriteLine("        The Error has been reported to the Administrator");
-            outFile.WriteLine("    </h2>");
-            outFile.WriteLine("}");
-            outFile.Close();
-
-            Console.Write(textPath);
+            Console.Write(string.Format("\n{0} created", textPath));
         }
     }
 }

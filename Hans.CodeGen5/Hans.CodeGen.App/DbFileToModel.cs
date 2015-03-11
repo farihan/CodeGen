@@ -136,7 +136,7 @@ namespace Hans.CodeGen.App
 
             outFile.Close();
 
-            Console.Write(string.Format("\n{0}Model.cs created", className));
+            Console.Write(string.Format("\n{0} created", textPath));
         }
     }
 }
