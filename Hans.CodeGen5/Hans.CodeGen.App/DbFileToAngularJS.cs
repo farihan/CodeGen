@@ -14,7 +14,7 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Angular);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularScripts);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -76,7 +76,7 @@ namespace Hans.CodeGen.App
 
         private static void WriterForControllerJS(string path, string tableName, string className, DatabaseInfo db)
         {
-            var specificPath = string.Format(@"{0}\{1}\{2}", path, CreationType.AngularJS, className.UpperedFirstChar());
+            var specificPath = path;
             var textPath = string.Format(@"{0}\{1}{2}.js", specificPath, className.LoweredFirstChar(), CreationType.Controller);
 
             var singularization = new Singularization();

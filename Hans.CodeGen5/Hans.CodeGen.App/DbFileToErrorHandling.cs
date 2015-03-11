@@ -14,22 +14,33 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Error);
+            var path1 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularAppStart);
+            var path2 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KOAppStart);
+            var path3 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorAppStart);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) || string.IsNullOrEmpty(path3))
             {
                 throw new Exception("Output Directory does not exist");
             }
 
-            Folder.Create(path);
+            Folder.Create(path1);
+            Folder.Create(path2);
+            Folder.Create(path3);
 
-            WriterForFilterConfig(path, db);
-            WriterForActionFilter(path, db);
-            WriterForRouteConfig(path, db);
-            WriterForGlobal(path, db);
-            WriterForErrorController(path, db);
-            WriterForErrorCshtml(path, db);
-            WriterForFailCshtml(path, db);
+            WriterForFilterConfig(path1, db);
+            WriterForActionFilter(path1, db);
+            WriterForRouteConfig(path1, db);
+            WriterForGlobal(path1, db);
+
+            WriterForFilterConfig(path2, db);
+            WriterForActionFilter(path2, db);
+            WriterForRouteConfig(path2, db);
+            WriterForGlobal(path2, db);
+
+            WriterForFilterConfig(path3, db);
+            WriterForActionFilter(path3, db);
+            WriterForRouteConfig(path3, db);
+            WriterForGlobal(path3, db);
 
             Console.WriteLine();
         }
@@ -149,37 +160,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            HttpException httpException = exception as HttpException;");
             outFile.WriteLine("            // Log this exception with your logger");
             outFile.WriteLine("        }");
-            outFile.WriteLine("    }");
-            outFile.WriteLine("}");
-            outFile.Close();
-
-            Console.Write(textPath);
-        }
-
-        private static void WriterForErrorController(string path, DatabaseInfo db)
-        {
-            var textPath = string.Format(@"{0}\ErrorController.cs", path);
-            var outFile = File.CreateText(textPath);
-
-            outFile.WriteLine("using System;");
-            outFile.WriteLine("using System.Collections.Generic;");
-            outFile.WriteLine("using System.Linq;");
-            outFile.WriteLine("using System.Web;");
-            outFile.WriteLine("using System.Web.Mvc;");
-            outFile.WriteLine("");
-            outFile.WriteLine("namespace {0}.Controllers", db.NamespaceCs);
-            outFile.WriteLine("{");
-            outFile.WriteLine("    public class ErrorController : Controller");
-            outFile.WriteLine("    {");
-            outFile.WriteLine("        // The 404 action handler");
-            outFile.WriteLine("        // Get: /Fail/");
-            outFile.WriteLine("        public ActionResult Fail()");
-            outFile.WriteLine("        {");
-            outFile.WriteLine("            Response.StatusCode = 404;");
-            outFile.WriteLine("            Response.TrySkipIisCustomErrors = true;");
-            outFile.WriteLine("            return View();");
-            outFile.WriteLine("        }");
-            outFile.WriteLine("");
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
             outFile.Close();

@@ -13,14 +13,18 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Domains);
+            var path1 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularDomains);
+            var path2 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KODomains);
+            var path3 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorDomains);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) || string.IsNullOrEmpty(path3))
             {
                 throw new Exception("Output Directory does not exist");
             }
 
-            Folder.Create(path);
+            Folder.Create(path1);
+            Folder.Create(path2);
+            Folder.Create(path3);
 
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
@@ -31,7 +35,9 @@ namespace Hans.CodeGen.App
                 // create domain class
                 //WriterForNh(path, tableName, className.UpperedFirstChar(), db);
                 //WriterForAdoNet(path, tableName, className.UpperedFirstChar(), db);
-                WriterForDomain(path, tableName, className, db);
+                WriterForDomain(path1, tableName, className, db);
+                WriterForDomain(path2, tableName, className, db);
+                WriterForDomain(path3, tableName, className, db);
             }
 
             Console.WriteLine();

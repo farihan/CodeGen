@@ -14,14 +14,18 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Models);
+            var path1 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularModels);
+            var path2 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KOModels);
+            var path3 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorModels);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) || string.IsNullOrEmpty(path3))
             {
                 throw new Exception("Output Directory does not exist");
             }
 
-            Folder.Create(path);
+            Folder.Create(path1);
+            Folder.Create(path2);
+            Folder.Create(path3);
 
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
@@ -30,7 +34,9 @@ namespace Hans.CodeGen.App
                 var className = tableName.UpperedFirstChar();
 
                 // create model class
-                WriterForModel(path, tableName, className, db);
+                WriterForModel(path1, tableName, className, db);
+                WriterForModel(path2, tableName, className, db);
+                WriterForModel(path3, tableName, className, db);
             }
 
             Console.WriteLine();

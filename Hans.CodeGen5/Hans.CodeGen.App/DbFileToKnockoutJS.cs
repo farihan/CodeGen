@@ -14,7 +14,7 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.KnockoutJS);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KOScripts);
 
             if (string.IsNullOrEmpty(path))
             {

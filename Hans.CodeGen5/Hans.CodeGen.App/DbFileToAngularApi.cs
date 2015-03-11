@@ -14,7 +14,7 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Angular);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularController);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -31,6 +31,7 @@ namespace Hans.CodeGen.App
                 
                 // create api
                 WriterForApiController(path, tableName, className, db);
+                WriterForErrorController(path, db);
             }
 
             Console.WriteLine();
@@ -38,12 +39,12 @@ namespace Hans.CodeGen.App
 
         private static void WriterForApiController(string path, string tableName, string className, DatabaseInfo db)
         {
-            var specificPath = string.Format(@"{0}\{1}", path, CreationType.AngularApi);
+            var specificPath = path;
 
             var singularization = new Singularization();
             var pluralization = new Pluralization();
 
-            var textPath = string.Format(@"{0}\{1}\{2}{3}.cs", path, CreationType.AngularApi, className, CreationType.Controller);
+            var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
             var lastSchema = db.Schemas.Where(p => p.Table == tableName).Last();
 
@@ -261,6 +262,36 @@ namespace Hans.CodeGen.App
                         outFile.WriteLine("                {0} = x.{0},", columnName);
                 }
             }
+        }
+        private static void WriterForErrorController(string path, DatabaseInfo db)
+        {
+            var textPath = string.Format(@"{0}\ErrorController.cs", path);
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("using System;");
+            outFile.WriteLine("using System.Collections.Generic;");
+            outFile.WriteLine("using System.Linq;");
+            outFile.WriteLine("using System.Web;");
+            outFile.WriteLine("using System.Web.Mvc;");
+            outFile.WriteLine("");
+            outFile.WriteLine("namespace {0}.Controllers", db.NamespaceCs);
+            outFile.WriteLine("{");
+            outFile.WriteLine("    public class ErrorController : Controller");
+            outFile.WriteLine("    {");
+            outFile.WriteLine("        // The 404 action handler");
+            outFile.WriteLine("        // Get: /Fail/");
+            outFile.WriteLine("        public ActionResult Fail()");
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            Response.StatusCode = 404;");
+            outFile.WriteLine("            Response.TrySkipIisCustomErrors = true;");
+            outFile.WriteLine("            return View();");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("}");
+            outFile.Close();
+
+            Console.Write(textPath);
         }
     }
 }

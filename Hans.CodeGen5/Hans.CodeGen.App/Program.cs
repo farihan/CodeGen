@@ -44,7 +44,7 @@ namespace Hans.CodeGen.App
                     DbFileToDomain.Generate(db);
                     DbFileToModel.Generate(db);
                     DbFileToController.Generate(db);
-                    DbFileToApiController.Generate(db);
+                    DbFileToKnockoutApi.Generate(db);
                     DbFileToErrorHandling.Generate(db);
                     DbFileToUI.Generate(db);
                     DbFileToKnockoutJS.Generate(db);

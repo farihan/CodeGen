@@ -14,7 +14,7 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Knockout);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KOViews);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -42,6 +42,9 @@ namespace Hans.CodeGen.App
                 WriterForDelete(path, tableName, className, db);
                 // grid
                 WriterForGrid(path, tableName, className, db);
+
+                WriterForErrorCshtml(path, db);
+                WriterForFailCshtml(path, db);
             }
 
             // layout
@@ -404,6 +407,77 @@ namespace Hans.CodeGen.App
             outFile.Close();
 
             Console.Write(string.Format("\n{0} created", textPath));
+        }
+
+        private static void WriterForErrorCshtml(string path, DatabaseInfo db)
+        {
+            var textPath = string.Format(@"{0}\Error.cshtml", path);
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("@model System.Web.Mvc.HandleErrorInfo");
+            outFile.WriteLine("@{");
+            outFile.WriteLine("    ViewBag.Title = \"Error\";");
+            outFile.WriteLine("}");
+            outFile.WriteLine("<h1 class=\"error\">");
+            outFile.WriteLine("    Error.</h1>");
+            outFile.WriteLine("<h2 class=\"error\">");
+            outFile.WriteLine("    An error occurred while processing your request.</h2>");
+            outFile.WriteLine("@{");
+            outFile.WriteLine("    if (Request.IsLocal)");
+            outFile.WriteLine("    {");
+            outFile.WriteLine("        if (@Model != null && @Model.Exception != null)");
+            outFile.WriteLine("        {");
+            outFile.WriteLine("    <h3>");
+            outFile.WriteLine("        Exception was : @Model.Exception.Message</h3>");
+            outFile.WriteLine("    <h4>");
+            outFile.WriteLine("        Stack Trace: @Model.Exception.StackTrace</h4>");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("        else");
+            outFile.WriteLine("        {");
+            outFile.WriteLine("    <h3>");
+            outFile.WriteLine("        Exception was null</h3>");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("    else");
+            outFile.WriteLine("    {");
+            outFile.WriteLine("    <h4>");
+            outFile.WriteLine("        The Error has been reported to the Administrator</h4>");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("}");
+            outFile.Close();
+
+            Console.Write(textPath);
+        }
+
+        private static void WriterForFailCshtml(string path, DatabaseInfo db)
+        {
+            var textPath = string.Format(@"{0}\Fail.cshtml", path);
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("@model System.Web.Mvc.HandleErrorInfo");
+            outFile.WriteLine("@{");
+            outFile.WriteLine("    ViewBag.Title = \"Fail\";");
+            outFile.WriteLine("}");
+            outFile.WriteLine("");
+            outFile.WriteLine("<h1 class=\"error\">");
+            outFile.WriteLine("    Fail</h1>");
+            outFile.WriteLine("");
+            outFile.WriteLine("@if (@Model != null)");
+            outFile.WriteLine("{");
+            outFile.WriteLine("");
+            outFile.WriteLine("    <h2 class=\"error\">@Model.Exception</h2>");
+            outFile.WriteLine("}");
+            outFile.WriteLine("else");
+            outFile.WriteLine("{");
+            outFile.WriteLine("    <h2>");
+            outFile.WriteLine("        Oops! Server Returned a 404 (Page Not Found)!");
+            outFile.WriteLine("        <br />");
+            outFile.WriteLine("        The Error has been reported to the Administrator");
+            outFile.WriteLine("    </h2>");
+            outFile.WriteLine("}");
+            outFile.Close();
+
+            Console.Write(textPath);
         }
     }
 }

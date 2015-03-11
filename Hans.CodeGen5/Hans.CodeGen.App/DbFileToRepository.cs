@@ -14,14 +14,18 @@ namespace Hans.CodeGen.App
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.Repositories);
+            var path1 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.AngularRepository);
+            var path2 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KORepository);
+            var path3 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorRepository);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) || string.IsNullOrEmpty(path3))
             {
                 throw new Exception("Output Directory does not exist");
             }
 
-            Folder.Create(path);
+            Folder.Create(path1);
+            Folder.Create(path2);
+            Folder.Create(path3);
 
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
@@ -31,8 +35,14 @@ namespace Hans.CodeGen.App
 
             }
 
-            WriterForInterface(path, db);
-            WriterForImplementation(path, db);
+            WriterForInterface(path1, db);
+            WriterForImplementation(path1, db);
+
+            WriterForInterface(path2, db);
+            WriterForImplementation(path2, db);
+
+            WriterForInterface(path3, db);
+            WriterForImplementation(path3, db);
 
             Console.WriteLine();
         }

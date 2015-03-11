@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace Hans.CodeGen.App
 {
-    public class DbFileToApiController
+    public class DbFileToKnockoutApi
     {
         public static void Generate(DatabaseInfo db)
         {
-            var path = string.Format(@"{0}\{1}", db.OutputDirectory, CreationType.ApiControllers);
+            var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.KOController);
 
             if (string.IsNullOrEmpty(path))
             {
@@ -34,6 +34,7 @@ namespace Hans.CodeGen.App
                 // create
                 // edit
                 // delete
+                WriterForErrorController(path, db);
             }
 
             Console.WriteLine();
@@ -246,6 +247,37 @@ namespace Hans.CodeGen.App
             outFile.Close();
 
             Console.Write(string.Format("\n{0}ApiController.cs created", className));
+        }
+
+        private static void WriterForErrorController(string path, DatabaseInfo db)
+        {
+            var textPath = string.Format(@"{0}\ErrorController.cs", path);
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("using System;");
+            outFile.WriteLine("using System.Collections.Generic;");
+            outFile.WriteLine("using System.Linq;");
+            outFile.WriteLine("using System.Web;");
+            outFile.WriteLine("using System.Web.Mvc;");
+            outFile.WriteLine("");
+            outFile.WriteLine("namespace {0}.Controllers", db.NamespaceCs);
+            outFile.WriteLine("{");
+            outFile.WriteLine("    public class ErrorController : Controller");
+            outFile.WriteLine("    {");
+            outFile.WriteLine("        // The 404 action handler");
+            outFile.WriteLine("        // Get: /Fail/");
+            outFile.WriteLine("        public ActionResult Fail()");
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            Response.StatusCode = 404;");
+            outFile.WriteLine("            Response.TrySkipIisCustomErrors = true;");
+            outFile.WriteLine("            return View();");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("}");
+            outFile.Close();
+
+            Console.Write(textPath);
         }
     }
 }

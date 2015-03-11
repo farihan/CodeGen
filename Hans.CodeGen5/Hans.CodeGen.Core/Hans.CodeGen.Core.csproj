@@ -43,6 +43,7 @@
     <Compile Include="Commons\CreationType.cs" />
     <Compile Include="Commons\DbLineType.cs" />
     <Compile Include="Commons\DbType.cs" />
+    <Compile Include="Commons\DirectoryType.cs" />
     <Compile Include="Commons\KeyType.cs" />
     <Compile Include="Commons\MsSqlDataType.cs" />
     <Compile Include="Commons\SelectType.cs" />
