@@ -91,7 +91,7 @@ namespace Hans.CodeGen.App
             Folder.Create(specificPath);
             var outFile = File.CreateText(textPath);
 
-            outFile.WriteLine("'use strict';");
+            outFile.WriteLine("//'use strict';");
             outFile.WriteLine("angular.module('{0}', ['ui.bootstrap']);", db.ApplicationName);
             outFile.WriteLine("");
             outFile.WriteLine("angular.module('{0}').controller('{1}Controller', function ($scope, $http) {{", db.ApplicationName, className);
@@ -102,9 +102,17 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        isAsc: true,");
             outFile.WriteLine("        totalItems: 0");
             outFile.WriteLine("    };");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.{0} = null;", pluralization.Pluralize(className.ToLower()));
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.gridIndex = function (index) {");
+            outFile.WriteLine("        return (index + 1) + (($scope.pagingInfo.page - 1) * $scope.pagingInfo.pageSize);");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
             outFile.WriteLine("    $scope.setPage = function (pageNo) {");
             outFile.WriteLine("        $scope.pagingInfo.page = pageNo;");
             outFile.WriteLine("    };");
+            outFile.WriteLine("");
             outFile.WriteLine("    $scope.pageChanged = function () {");
             outFile.WriteLine("        pageInit();");
             outFile.WriteLine("    };");
@@ -119,28 +127,197 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        pageInit();");
             outFile.WriteLine("    };");
             outFile.WriteLine("");
+            outFile.WriteLine("    $scope.openModal = function (id, html) {");
+            outFile.WriteLine("        var modalInstance = $modal.open({");
+            outFile.WriteLine("            templateUrl: html,");
+            outFile.WriteLine("            controller: 'ModalController',");
+            outFile.WriteLine("            size: '',");
+            outFile.WriteLine("            resolve: {");
+            outFile.WriteLine("                selectedID: function () {");
+            outFile.WriteLine("                    return id;");
+            outFile.WriteLine("                },");
+            outFile.WriteLine("                selectedPagingInfo: function () {");
+            outFile.WriteLine("                    return $scope.pagingInfo;");
+            outFile.WriteLine("                }");
+            outFile.WriteLine("            }");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("");
+            outFile.WriteLine("        modalInstance.result.then(function (refreshProducts) {");
+            outFile.WriteLine("            $scope.products = refreshProducts;");
+            outFile.WriteLine("        }, function () {");
+            outFile.WriteLine("            //$log.info('Modal dismissed at: ' + new Date());");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
             outFile.WriteLine("    function loadTotalItems() {");
-            outFile.WriteLine("        $http.get('/api/{0}/getsize').success(function (data) {{", className.ToLower());
+            outFile.WriteLine("        $http.get('/api/product/getsize')");
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.pagingInfo.totalItems = data;");
             outFile.WriteLine("        })");
-            outFile.WriteLine("        .error(function () {");
-            outFile.WriteLine("            $scope.error = \"Error has occured!\";");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!\';");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    function loadProducts() {");
+            outFile.WriteLine("        $http.get('/api/product/getallby', { params: $scope.pagingInfo })");
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.products = data;");
+            outFile.WriteLine("        })");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("    }  ");
+            outFile.WriteLine("");
+            outFile.WriteLine("    function pageInit() {");
+            outFile.WriteLine("        loadTotalItems();");
+            outFile.WriteLine("        loadProducts();");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    pageInit();");
+            outFile.WriteLine("});");
+            outFile.WriteLine("");
+            outFile.WriteLine("angular.module('{0}').controller('ModalController', function ($scope, $modalInstance, $http, selectedID, selectedPagingInfo) {{", 
+                db.ApplicationName);
+            outFile.WriteLine("    $scope.selectedID = selectedID;");
+            outFile.WriteLine("    $scope.selectedPagingInfo = selectedPagingInfo;");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.ok = function () {");
+            outFile.WriteLine("        closeAndRefreshRepeater();");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.cancel = function () {");
+            outFile.WriteLine("        closeAndRefreshRepeater();");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.create = function ({0}) {{", className.ToLower());
+            outFile.WriteLine("        if ($scope.createForm.$valid) {");
+            outFile.WriteLine("            $http({");
+            outFile.WriteLine("                method: 'POST',");
+            outFile.WriteLine("                url: '/api/{0}/create',", className.ToLower());
+            outFile.WriteLine("                data: {");
+            
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                if (s.ColumnType == ColumnType.None)
+                {
+                    outFile.WriteLine("                    '{0}': {1}.{0},", s.Column, className.ToLower());
+                }
+            }
+            
+            outFile.WriteLine("                },");
+            outFile.WriteLine("                headers: { 'Content-Type': 'application/json' }");
+            outFile.WriteLine("            })");
+            outFile.WriteLine("            .success(function (data, status, headers, config) {");
+            outFile.WriteLine("                closeAndRefreshRepeater();");
+            outFile.WriteLine("            })");
+            outFile.WriteLine("            .error(function(data, status, headers, config) {");
+            outFile.WriteLine("                $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            });");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.update = function (product) {");
+            outFile.WriteLine("        if ($scope.editForm.$valid) {");
+            outFile.WriteLine("            $http({");
+            outFile.WriteLine("                method: 'PUT',");
+            outFile.WriteLine("                url: '/api/{0}/edit/' + {0}.{1} ,", className.ToLower(), id);
+            outFile.WriteLine("                data: {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                outFile.WriteLine("                    '{0}': {1}.{0},", s.Column, className.ToLower());
+            }
+
+            outFile.WriteLine("                },");
+            outFile.WriteLine("                headers: { 'Content-Type': 'application/json' }");
+            outFile.WriteLine("            })");
+            outFile.WriteLine("            .success(function (data, status, headers, config) {");
+            outFile.WriteLine("                closeAndRefreshRepeater();");
+            outFile.WriteLine("            })");
+            outFile.WriteLine("            .error(function(data, status, headers, config) {");
+            outFile.WriteLine("                $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            });");
+            outFile.WriteLine("        }");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
+            outFile.WriteLine("    $scope.delete = function (id) {");
+            outFile.WriteLine("        $http.delete('/api/{0}/delete', {{", className.ToLower());
+            outFile.WriteLine("            params: { 'id': id }");
+            outFile.WriteLine("        })");
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            closeAndRefreshRepeater();");
+            outFile.WriteLine("        })");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("    };");
+            outFile.WriteLine("");
+
+            foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
+            {
+                outFile.WriteLine("    function getAvailable{0}() {{", r.ParentTable.UpperedFirstChar());
+                outFile.WriteLine("        $scope.available{0} = [];", r.ParentTable.UpperedFirstChar());
+                outFile.WriteLine("        $http.get('/api/{0}/getall')", singularization.Singularize(r.ParentTable.ToLower()));
+                outFile.WriteLine("        .success(function (data, status, headers, config) {");
+                outFile.WriteLine("            $.each(data, function (index, item) {");
+                outFile.WriteLine("                $scope.available{0}.push({{ ID: item.{1}, Name: item.{1} }});", 
+                    r.ParentTable.UpperedFirstChar(), r.PkConstraintColumn);
+                outFile.WriteLine("            });");
+                outFile.WriteLine("        })");
+                outFile.WriteLine("        .error(function (data, status, headers, config) {");
+                outFile.WriteLine("            $scope.error = 'Error has occured!';");
+                outFile.WriteLine("        });");
+                outFile.WriteLine("    }");
+            }
+
+            outFile.WriteLine("");
+            outFile.WriteLine("    function load{0}() {{", className);
+            outFile.WriteLine("        $scope.{0} = null;", className.ToLower());
+            outFile.WriteLine("        $http.get('/api/{0}/get', {{ params: {{ id: $scope.selectedID }} }})", className.ToLower());
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.{0} = data;", className.ToLower());
+            outFile.WriteLine("        })");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("        });");
+            outFile.WriteLine("    }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    function loadTotalItems() {");
+            outFile.WriteLine("        $http.get('/api/{0}/getsize')", className.ToLower());
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.selectedPagingInfo.totalItems = data;");
+            outFile.WriteLine("        })");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!';");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    function load{0}() {{", pluralization.Pluralize(className));
-            outFile.WriteLine("        $scope.{0} = null;", pluralization.Pluralize(className.ToLower()));
-            outFile.WriteLine("        $http.get('/api/{0}/getallby', {{ params: $scope.pagingInfo }}).success(function (data) {{", className.ToLower());
-            outFile.WriteLine("            $scope.{0} = data;", pluralization.Pluralize(className.ToLower()));
+            outFile.WriteLine("        $http.get('/api/{0}/getallby', {{ params: $scope.selectedPagingInfo }})", className.ToLower());
+            outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.refresh{0} = data;", pluralization.Pluralize(className));
+            outFile.WriteLine("            $modalInstance.close(data);");
             outFile.WriteLine("        })");
-            outFile.WriteLine("        .error(function () {");
-            outFile.WriteLine("            $scope.error = \"Error has occured!\";");
+            outFile.WriteLine("        .error(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.error = 'Error has occured!';");
             outFile.WriteLine("        });");
-            outFile.WriteLine("    }");    
+            outFile.WriteLine("    }");
+            outFile.WriteLine("");
+            outFile.WriteLine("    function closeAndRefreshRepeater() {");
+            outFile.WriteLine("        loadTotalItems();");
+            outFile.WriteLine("        load{0}();", pluralization.Pluralize(className));
+            outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    function pageInit() {");
-            outFile.WriteLine("        loadTotalItems();");
-            outFile.WriteLine("        load{0}() {{", pluralization.Pluralize(className));
+
+            foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
+            {
+                outFile.WriteLine("        getAvailable{0}();", pluralization.Pluralize(r.ParentTable.UpperedFirstChar()));
+            }
+
+            outFile.WriteLine("        if ($scope.selectedID != null)");
+            outFile.WriteLine("            load{0}();", className);
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    pageInit();");
