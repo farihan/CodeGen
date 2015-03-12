@@ -62,10 +62,8 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">");
             outFile.WriteLine("    <title>@ViewBag.Title - {0}</title>", db.ApplicationName);
             outFile.WriteLine("    <!-- Bootstrap -->");
-            outFile.WriteLine("    @Scripts.Render(\"~/bundles/jquery\")");
-            outFile.WriteLine("    @Scripts.Render(\"~/bundles/modernizr\")");
-            outFile.WriteLine("    @Scripts.Render(\"~/bundles/angular\")");
             outFile.WriteLine("    @Styles.Render(\"~/Content/css\")");
+            outFile.WriteLine("    @Scripts.Render(\"~/bundles/modernizr\")");
             outFile.WriteLine("    <meta name=\"description\" content=\"The description of my {0} application\" />", db.ApplicationName);
             outFile.WriteLine("    <!--[if lt IE 9]>");
             outFile.WriteLine("        script type=\"text/javascript\" src=\"Scripts/html5shiv.js\"></script>");
@@ -109,6 +107,30 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        </footer>");
             outFile.WriteLine("    </div>");
             outFile.WriteLine("");
+            outFile.WriteLine("    <!-- jquery -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/jquery-1.10.2.min.js\"></script>");
+            outFile.WriteLine("    <!-- angular -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/angular.min.js\"></script>");
+            outFile.WriteLine("    <script src=\"~/Scripts/angular-route.min.js\"></script>");
+            outFile.WriteLine("    <script src=\"~/Scripts/angular-resource.min.js\"></script>");
+            outFile.WriteLine("    <script src=\"~/Scripts/angular-animate.min.js\"></script>");
+            outFile.WriteLine("    <!-- angular boostrap ui -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/ui-bootstrap-tpls-0.11.2.js\"></script>");
+            outFile.WriteLine("    <!-- toaster -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/toaster.min.js\"></script>");
+            outFile.WriteLine("    <!-- loading bar -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/loading-bar.js\"></script>");
+            outFile.WriteLine("    <!-- app -->");
+            outFile.WriteLine("    <script src=\"~/Scripts/App/app.js\"></script>");
+            
+            foreach (var className in db.Schemas
+                .Select(x => x.Table)
+                .Distinct())
+            {
+                outFile.WriteLine("    <script src=\"~/Scripts/App/{0}Controller.js\"></script>", className.LoweredFirstChar());
+            }
+            
+            outFile.WriteLine("");
             outFile.WriteLine("    @RenderSection(\"scripts\", required: false)");
             outFile.WriteLine("</body>");
             outFile.WriteLine("</html>");
@@ -137,7 +159,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    @Html.Partial(\"~/Views/Product/_Edit.cshtml\")");
             outFile.WriteLine("    @Html.Partial(\"~/Views/Product/_Details.cshtml\")");
             outFile.WriteLine("</div>");
-            outFile.WriteLine("<script src=\"~/Scripts/App/productController.js\"></script>");
 
             outFile.Close();
 
@@ -257,7 +278,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        </div>");
             outFile.WriteLine("        <div class=\"modal-footer\">");
             outFile.WriteLine("            <input class=\"btn btn-default btn-sm\" type=\"button\" ng-click=\"cancel()\" value=\"Cancel\" />");
-            outFile.WriteLine("            <input class=\"btn btn-primary btn-sm\" type=\"submit\" ng-click=\"submitted=true\" value=\"Create\" />");
+            outFile.WriteLine("            <input class=\"btn btn-primary btn-sm\" type=\"submit\" ng-click=\"submitted=true\" value=\"Create\" ng-disabled=\"isProcessing\" />");
             outFile.WriteLine("        </div>");
             outFile.WriteLine("    </form>");
             outFile.WriteLine("</script>");
@@ -326,7 +347,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        </div>");
             outFile.WriteLine("        <div class=\"modal-footer\">");
             outFile.WriteLine("            <input class=\"btn btn-default btn-sm\" type=\"button\" ng-click=\"cancel()\" value=\"Cancel\" />");
-            outFile.WriteLine("            <input class=\"btn btn-primary btn-sm\" type=\"submit\" ng-click=\"submitted=true\" value=\"Update\" />");
+            outFile.WriteLine("            <input class=\"btn btn-primary btn-sm\" type=\"submit\" ng-click=\"submitted=true\" value=\"Update\"  ng-disabled=\"isProcessing\" />");
             outFile.WriteLine("        </div>");
             outFile.WriteLine("    </form>");
             outFile.WriteLine("</script>");
@@ -384,7 +405,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    </div>");
             outFile.WriteLine("	   <div class=\"modal-footer\">");
             outFile.WriteLine("        <button class=\"btn btn-default btn-sm\" ng-click=\"ok()\">Cancel</button>");
-            outFile.WriteLine("        <button class=\"btn btn-danger btn-sm\" ng-click=\"delete({0}.{1})\">Delete</button>", className.LoweredFirstChar(), id.Column);
+            outFile.WriteLine("        <button class=\"btn btn-danger btn-sm\" ng-click=\"delete({0}.{1})\" ng-disabled=\"isProcessing\">Delete</button>", className.LoweredFirstChar(), id.Column);
             outFile.WriteLine("    </div>");
             outFile.WriteLine("</script>");
 

@@ -33,7 +33,6 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
 
-                // create model class
                 WriterForModel(path1, tableName, className, db);
                 WriterForModel(path2, tableName, className, db);
                 WriterForModel(path3, tableName, className, db);

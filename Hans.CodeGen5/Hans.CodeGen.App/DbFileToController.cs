@@ -29,7 +29,6 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
 
-                // create controllers
                 WriterForController(path, tableName, className, db);
             }
 

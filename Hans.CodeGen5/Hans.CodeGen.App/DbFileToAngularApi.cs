@@ -29,7 +29,6 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
                 
-                // create api
                 WriterForApiController(path, tableName, className, db);
             }
 

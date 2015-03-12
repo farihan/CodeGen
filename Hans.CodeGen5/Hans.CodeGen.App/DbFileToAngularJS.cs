@@ -32,6 +32,8 @@ namespace Hans.CodeGen.App
                 WriterForControllerJS(path, tableName, className, db);
             }
 
+            WriterForAppJS(path, db);
+
             Console.WriteLine();
         }
 
@@ -90,9 +92,8 @@ namespace Hans.CodeGen.App
             var outFile = File.CreateText(textPath);
 
             outFile.WriteLine("//'use strict';");
-            outFile.WriteLine("angular.module('{0}', ['ui.bootstrap']);", db.ApplicationName);
             outFile.WriteLine("");
-            outFile.WriteLine("angular.module('{0}').controller('{1}Controller', function ($scope, $http) {{", db.ApplicationName, className);
+            outFile.WriteLine("app.controller('{0}Controller', function ($scope, $http, $modal, toaster) {{", className);
             outFile.WriteLine("    $scope.pagingInfo = {");
             outFile.WriteLine("        page: 1,");
             outFile.WriteLine("        pageSize: 10,");
@@ -154,6 +155,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!\';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
@@ -164,19 +166,20 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }  ");
             outFile.WriteLine("");
             outFile.WriteLine("    function pageInit() {");
             outFile.WriteLine("        loadTotalItems();");
             outFile.WriteLine("        loadProducts();");
+            outFile.WriteLine("        toaster.pop('info', 'Load page ' + $scope.pagingInfo.page + ' and sort by ' + $scope.pagingInfo.sortBy);");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    pageInit();");
             outFile.WriteLine("});");
             outFile.WriteLine("");
-            outFile.WriteLine("angular.module('{0}').controller('ModalController', function ($scope, $modalInstance, $http, selectedID, selectedPagingInfo) {{", 
-                db.ApplicationName);
+            outFile.WriteLine("app.controller('ModalController', function ($scope, $modalInstance, $http, selectedID, selectedPagingInfo, toaster) {{");
             outFile.WriteLine("    $scope.selectedID = selectedID;");
             outFile.WriteLine("    $scope.selectedPagingInfo = selectedPagingInfo;");
             outFile.WriteLine("");
@@ -190,6 +193,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("");
             outFile.WriteLine("    $scope.create = function ({0}) {{", className.ToLower());
             outFile.WriteLine("        if ($scope.createForm.$valid) {");
+            outFile.WriteLine("            $scope.isProcessing = true;");
             outFile.WriteLine("            $http({");
             outFile.WriteLine("                method: 'POST',");
             outFile.WriteLine("                url: '/api/{0}/create',", className.ToLower());
@@ -207,16 +211,20 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("                headers: { 'Content-Type': 'application/json' }");
             outFile.WriteLine("            })");
             outFile.WriteLine("            .success(function (data, status, headers, config) {");
+            outFile.WriteLine("                $scope.isProcessing = false;");
+            outFile.WriteLine("                toaster.pop('success', 'Create successful...');");
             outFile.WriteLine("                closeAndRefreshRepeater();");
             outFile.WriteLine("            })");
             outFile.WriteLine("            .error(function(data, status, headers, config) {");
             outFile.WriteLine("                $scope.error = 'Error has occured!';");
+            outFile.WriteLine("                toaster.pop('error', $scope.error);");
             outFile.WriteLine("            });");
             outFile.WriteLine("        }");
             outFile.WriteLine("    };");
             outFile.WriteLine("");
             outFile.WriteLine("    $scope.update = function (product) {");
             outFile.WriteLine("        if ($scope.editForm.$valid) {");
+            outFile.WriteLine("            $scope.isProcessing = true;");
             outFile.WriteLine("            $http({");
             outFile.WriteLine("                method: 'PUT',");
             outFile.WriteLine("                url: '/api/{0}/edit/' + {0}.{1} ,", className.ToLower(), id);
@@ -231,23 +239,30 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("                headers: { 'Content-Type': 'application/json' }");
             outFile.WriteLine("            })");
             outFile.WriteLine("            .success(function (data, status, headers, config) {");
+            outFile.WriteLine("                $scope.isProcessing = false;");
+            outFile.WriteLine("                toaster.pop('success', 'Update successful...');");
             outFile.WriteLine("                closeAndRefreshRepeater();");
             outFile.WriteLine("            })");
             outFile.WriteLine("            .error(function(data, status, headers, config) {");
             outFile.WriteLine("                $scope.error = 'Error has occured!';");
+            outFile.WriteLine("                toaster.pop('error', $scope.error);");
             outFile.WriteLine("            });");
             outFile.WriteLine("        }");
             outFile.WriteLine("    };");
             outFile.WriteLine("");
             outFile.WriteLine("    $scope.delete = function (id) {");
+            outFile.WriteLine("        $scope.isProcessing = true;");
             outFile.WriteLine("        $http.delete('/api/{0}/delete', {{", className.ToLower());
             outFile.WriteLine("            params: { 'id': id }");
             outFile.WriteLine("        })");
             outFile.WriteLine("        .success(function (data, status, headers, config) {");
+            outFile.WriteLine("            $scope.isProcessing = false;");
+            outFile.WriteLine("            toaster.pop('success', 'Delete successful...');");
             outFile.WriteLine("            closeAndRefreshRepeater();");
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    };");
             outFile.WriteLine("");
@@ -265,6 +280,7 @@ namespace Hans.CodeGen.App
                 outFile.WriteLine("        })");
                 outFile.WriteLine("        .error(function (data, status, headers, config) {");
                 outFile.WriteLine("            $scope.error = 'Error has occured!';");
+                outFile.WriteLine("            toaster.pop('error', $scope.error);");
                 outFile.WriteLine("        });");
                 outFile.WriteLine("    }");
             }
@@ -278,6 +294,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
@@ -288,6 +305,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
@@ -299,27 +317,46 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        })");
             outFile.WriteLine("        .error(function (data, status, headers, config) {");
             outFile.WriteLine("            $scope.error = 'Error has occured!';");
+            outFile.WriteLine("            toaster.pop('error', $scope.error);");
             outFile.WriteLine("        });");
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    function closeAndRefreshRepeater() {");
+            outFile.WriteLine("        toaster.pop('info', 'Unload modal...');");
             outFile.WriteLine("        loadTotalItems();");
             outFile.WriteLine("        load{0}();", pluralization.Pluralize(className));
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    function pageInit() {");
+            outFile.WriteLine("        toaster.pop('info', 'Load modal...');");
 
             foreach (var r in db.Relations.Where(p => p.ChildTable == tableName).OrderBy(p => p.ParentTable))
             {
                 outFile.WriteLine("        getAvailable{0}();", pluralization.Pluralize(r.ParentTable.UpperedFirstChar()));
             }
 
-            outFile.WriteLine("        if ($scope.selectedID != null)");
+            outFile.WriteLine("        if ($scope.selectedID != '')");
             outFile.WriteLine("            load{0}();", className);
             outFile.WriteLine("    }");
             outFile.WriteLine("");
             outFile.WriteLine("    pageInit();");
             outFile.WriteLine("});");
+
+            outFile.Close();
+
+            Console.Write(string.Format("\n{0} created", textPath));
+        }
+
+        private static void WriterForAppJS(string path, DatabaseInfo db)
+        {
+            var specificPath = path;
+            var textPath = string.Format(@"{0}\app.js", specificPath);
+
+            Folder.Create(specificPath);
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("//'use strict';");
+            outFile.WriteLine("var app = angular.module('{0}', ['ui.bootstrap', 'toaster', 'angular-loading-bar']);", db.ApplicationName);
 
             outFile.Close();
 
