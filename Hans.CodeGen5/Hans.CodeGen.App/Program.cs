@@ -100,13 +100,5 @@ namespace Hans.CodeGen.App
                 throw new Exception("Constraints are NULL");
             }
         }
-
-        // [todo]
-        // plan
-        // code for controller ~ crud
-        // code for ui ~ List/Create/Edit/Delete/Details
-        // code for ui knockout ~ List/Crate/Edit/Delete/Details
-        // references
-        // 'getting started with ef 6 code first using mvc 5'
     }
 }

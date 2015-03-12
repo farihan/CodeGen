@@ -23,7 +23,6 @@ namespace Hans.CodeGen.App
 
             Folder.Create(path);
 
-            //ajax.js
             WriterForAjax(path, db);
 
             foreach (var tableName in db.Schemas
@@ -31,9 +30,8 @@ namespace Hans.CodeGen.App
                 .Distinct())
             {
                 var className = tableName.UpperedFirstChar();
-                //model.js
+
                 WriterForModel(path, tableName, className, db);
-                //viewmodel.js
                 WriterForViewModel(path, tableName, className, db);
             }
 

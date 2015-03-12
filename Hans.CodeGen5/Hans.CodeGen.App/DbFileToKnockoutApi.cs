@@ -28,12 +28,8 @@ namespace Hans.CodeGen.App
                 .Distinct())
             {
                 var className = tableName.UpperedFirstChar();
+
                 WriterForApiController(path, tableName, className, db);
-                // index
-                // details
-                // create
-                // edit
-                // delete
             }
 
             WriterForErrorController(path, db);
@@ -67,14 +63,12 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}", className);
             outFile.WriteLine("        public int GetSize()", className);
-            //outFile.WriteLine("        public int Get{0}ListSize()", className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            return {0}Repository.FindAll().Count();", className);
             outFile.WriteLine("        }");
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}", className);
             outFile.WriteLine("        public IQueryable<{0}Model> GetAll()", className);
-            //outFile.WriteLine("        public IQueryable<{0}Model> Get{0}List()", className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            return {0}Repository.FindAll().Select(x => new {0}Model", className);
             outFile.WriteLine("            {");
@@ -97,7 +91,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
             outFile.WriteLine("        // GET: api/{0}", className);
             outFile.WriteLine("        public IQueryable<{0}Model> GetAllBy(int page, int pageSize)", className);
-            //outFile.WriteLine("        public IQueryable<{0}> Get{0}List(int page, int pageSize)", className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            return {0}Repository.FindAll().Select(x => new {0}Model", className);
             outFile.WriteLine("            {");
@@ -121,7 +114,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // GET: api/{0}/5", className);
             outFile.WriteLine("        [ResponseType(typeof({0}))]", className);
             outFile.WriteLine("        public async Task<IHttpActionResult> Get(int id)", className);
-            //outFile.WriteLine("        public async Task<IHttpActionResult> Get{0}(int id)", className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            var {0} = await {1}Repository.FindOneByAsync(x => x.{2} == id);", className.ToLower(), className, id);
             outFile.WriteLine("            if ({0} == null)", className.ToLower());
@@ -135,7 +127,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // POST: api/{0}", className);
             outFile.WriteLine("        [ResponseType(typeof({0}))]", className);
             outFile.WriteLine("        public async Task<IHttpActionResult> Create({0} {1})", className, className.ToLower());
-            //outFile.WriteLine("        public async Task<IHttpActionResult> Create{0}({0} {1})", className, className.ToLower());
             outFile.WriteLine("        {");
             outFile.WriteLine("            if (!ModelState.IsValid)");
             outFile.WriteLine("            {");
@@ -171,7 +162,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // DELETE: api/{0}/5", className);
             outFile.WriteLine("        [ResponseType(typeof({0}))]", className);
             outFile.WriteLine("        public async Task<IHttpActionResult> Delete(int id)", className);
-            //outFile.WriteLine("        public async Task<IHttpActionResult> Delete{0}(int id)", className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            var {0} = {1}Repository.FindOneBy(x => x.{2} == id);", className.ToLower(), className, id);
             outFile.WriteLine("            if ({0} == null)", className.ToLower());
@@ -187,7 +177,6 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // PUT: api/{0}/5", className);
             outFile.WriteLine("        [ResponseType(typeof(void))]");
             outFile.WriteLine("        public async Task<IHttpActionResult> Edit(int id, {0} {1})", className, className.ToLower());
-            //outFile.WriteLine("        public async Task<IHttpActionResult> Edit{0}(int id, {0} {1})", className, className.ToLower());
             outFile.WriteLine("        {");
             outFile.WriteLine("            if (!ModelState.IsValid)");
             outFile.WriteLine("            {");

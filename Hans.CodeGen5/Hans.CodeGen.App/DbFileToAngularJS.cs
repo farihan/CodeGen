@@ -29,8 +29,6 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
 
-                // create js
-                //WriterForServiceJS(path, tableName, className, db);
                 WriterForControllerJS(path, tableName, className, db);
             }
 

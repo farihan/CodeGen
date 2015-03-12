@@ -29,23 +29,16 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
 
-                // create views
-                // index
                 WriterForIndex(path, tableName, className, db);
-                // details
                 WriterForDetails(path, tableName, className, db);
-                // create
                 WriterForCreate(path, tableName, className, db);
-                // edit
                 WriterForEdit(path, tableName, className, db);
-                // delete
                 WriterForDelete(path, tableName, className, db);
             }
 
             WriterForErrorCshtml(path, db);
             WriterForFailCshtml(path, db);
 
-            // layout
             WriterForLayout(path, db);
 
             Console.WriteLine();
