@@ -41,6 +41,11 @@ namespace Hans.CodeGen.Core.Utils
         {
             foreach (var singularization in Singularizations)
             {
+                if (word.ToLower().Contains("address"))
+                {
+                    return word;
+                }
+
                 if (Regex.IsMatch(word, singularization.Key))
                 {
                     return Regex.Replace(word, singularization.Key, singularization.Value);

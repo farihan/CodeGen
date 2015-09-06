@@ -160,19 +160,15 @@ namespace Hans.CodeGen.Core.DataProvider
                 if (constraintType.ToLower() == "pk")
                 {
                     sql = @"SELECT *
-                        FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-                        WHERE OBJECTPROPERTY(OBJECT_ID(constraint_name), 'IsPrimaryKey') = 1";
+                            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                            WHERE CONSTRAINT_NAME LIKE 'PK_%';";
                 }
 
                 if (constraintType.ToLower() == "fk")
                 {
-                    sql = @"select 
-                            name,
-                            INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME,
-                            INFORMATION_SCHEMA.KEY_COLUMN_USAGE.COLUMN_NAME
-                        from sys.foreign_keys
-                        inner join INFORMATION_SCHEMA.KEY_COLUMN_USAGE
-                        on object_name(sys.foreign_keys.parent_object_id) = INFORMATION_SCHEMA.KEY_COLUMN_USAGE.TABLE_NAME";
+                    sql = @"SELECT *
+                            FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE
+                            WHERE CONSTRAINT_NAME LIKE 'FK_%';";
                 }
 
                 var cmd = new SqlCommand(sql, conn);
@@ -199,7 +195,7 @@ namespace Hans.CodeGen.Core.DataProvider
                     {
                         c.Table = reader["table_name"].ToString();
                         c.Column = reader["column_name"].ToString();
-                        c.Name = reader["name"].ToString();
+                        c.Name = reader["constraint_name"].ToString();
                         c.ConstraintType = constraintType.ToUpper();
                     }
                     
