@@ -46,7 +46,8 @@ namespace Hans.CodeGen.App
                 {
                     if (words.Count() > 1)
                     {
-                        tableName = singularization.Singularize(words[1].ToString());
+                        //tableName = singularization.Singularize(words[1].ToString());
+                        tableName = words[1].ToString();
                         break;
                     }
                 }

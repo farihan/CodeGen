@@ -117,22 +117,41 @@ namespace Hans.CodeGen.App
 
         private static void WriterForIndex(string path, string tableName, string className, DatabaseInfo db)
         {
+            var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
             Folder.Create(string.Format(@"{0}\{1}", path, className.UpperedFirstChar()));
 
             var textPath = string.Format(@"{0}\{1}\{2}.cshtml", path, className.UpperedFirstChar(), CreationType.Index);
             var outFile = File.CreateText(textPath);
 
             outFile.WriteLine("@model {0}.Web.Models.{1}Model", db.NamespaceCs, className);
-            outFile.WriteLine("@using {0}.Web.Helper", db.NamespaceCs);
+            outFile.WriteLine("@using {0}.Web.Helpers", db.NamespaceCs);
             outFile.WriteLine("");
             outFile.WriteLine("@{");
-            outFile.WriteLine("    ViewBag.Title = Index - \"{0}\";", className);
+            outFile.WriteLine("    ViewBag.Title = \"{0}\";", className);
             outFile.WriteLine("    Layout = \"~/Views/Shared/_Layout.cshtml\";");
             outFile.WriteLine("}");
             outFile.WriteLine("");
-            outFile.WriteLine("<h2>@ViewBag.Title</h2>");
-            outFile.WriteLine("<p>@Html.ActionLink(\"Create New\", \"Create\", null, new { @class = \"btn btn-default\" })</p>");
-
+            outFile.WriteLine("<div class=\"page-header\">");
+            outFile.WriteLine("    <h2>{0} <small>Manage {1}</small></h2>", className, className.LoweredFirstChar());
+            outFile.WriteLine("</div>");
+            outFile.WriteLine("");
+            outFile.WriteLine("<div class=\"clearfix\"></div>");
+            outFile.WriteLine("");
+            outFile.WriteLine("@using (Html.BeginForm(\"Index\", \"{0}\", FormMethod.Get))", className);
+            outFile.WriteLine("{");
+            outFile.WriteLine("    <div class=\"search-content form-inline\">");
+            outFile.WriteLine("        <div class=\"form-group\">");
+            outFile.WriteLine("            <label>Search by:</label>");
+            outFile.WriteLine("        </div>");
+            outFile.WriteLine("        <div class=\"form-group\">");
+            outFile.WriteLine("            @Html.TextBox(\"query\", ViewBag.CurrentQuery as string, new { @class = \"form-control input-sm\", style=\"width: 200px\" })");
+            outFile.WriteLine("        </div>");
+            outFile.WriteLine("        <button type=\"submit\" class=\"btn btn-sm btn-default\">Search</button>");
+            outFile.WriteLine("    </div>");
+            outFile.WriteLine("}");
+            outFile.WriteLine("");
+            outFile.WriteLine("<div class=\"clearfix\"></div>");
+            outFile.WriteLine("");
             outFile.WriteLine("<table class=\"table table-bordered table-striped\">");
             outFile.WriteLine("    <thead>");
             outFile.WriteLine("        <tr>");
@@ -140,7 +159,7 @@ namespace Hans.CodeGen.App
 
             foreach (var s in db.Schemas.Where(p => p.Table == tableName))
             {
-                outFile.WriteLine("            <th>@Html.SortLinks(\"{0}\", \"{0}\", Model.Sort, Model.CurrentPage, Model.IsAsc)</th>", s.Column);
+                outFile.WriteLine("            <th>@Html.SortLinks(\"{0}\", \"{0}\", Model.Sort, Model.CurrentPage, Model.IsAsc, ViewBag.CurrentQuery as string)</th>", s.Column);
             }
 
             outFile.WriteLine("        </tr>");
@@ -157,19 +176,27 @@ namespace Hans.CodeGen.App
             {
                 outFile.WriteLine("                <td>@item.{0}</td>", s.Column);
             }
-
             outFile.WriteLine("                <td>");
-            outFile.WriteLine("                    @Html.ActionLink(\"Edit\", \"Edit\", new { id = item.ProductKey }, new { @class = \"btn btn-default btn-xs\" }) |");
-            outFile.WriteLine("                    @Html.ActionLink(\"Details\", \"Details\", new { id = item.ProductKey }, new { @class = \"btn btn-default btn-xs\" }) |");
-            outFile.WriteLine("                    @Html.ActionLink(\"Delete\", \"Delete\", new { id = item.ProductKey }, new { @class = \"btn btn-danger btn-xs\" })");
+            outFile.WriteLine("                    <div class=\"btn-group\">");
+            outFile.WriteLine("                        <a href=\"#\" class=\"btn btn-xs btn-default\">Action</a>");
+            outFile.WriteLine("                        <a href=\"#\" class=\"btn btn-xs btn-default dropdown-toggle\" data-toggle=\"dropdown\" aria-expanded=\"false\"><span class=\"caret\"></span></a>");
+            outFile.WriteLine("                        <ul class=\"dropdown-menu\">");
+            outFile.WriteLine("                            <li>@Html.ActionLink(\"Details\", \"Details\", new {{ id = item.{0} }})</li>", id);
+            outFile.WriteLine("                            <li>@Html.ActionLink(\"Edit\", \"Edit\", new {{ id = item.{0} }})</li>", id);
+            outFile.WriteLine("                            <li>@Html.ActionLink(\"Delete\", \"Delete\", new {{ id = item.{0} }})</li>", id);
+            outFile.WriteLine("                        </ul>");
+            outFile.WriteLine("                    </div>");
             outFile.WriteLine("                </td>");
             outFile.WriteLine("            </tr>");
-
             outFile.WriteLine("        }");
             outFile.WriteLine("    </tbody>");
             outFile.WriteLine("</table>");
             outFile.WriteLine();
-            outFile.WriteLine("@Html.PageLinks(Model.PageSize, Model.TotalPages, Model.CurrentPage)");
+            outFile.WriteLine("@Html.PageLinks(Model.PageSize, Model.TotalPages, Model.CurrentPage, ViewBag.CurrentQuery as string)");
+            outFile.WriteLine();
+            outFile.WriteLine("<div class=\"clearfix\"></div>");
+            outFile.WriteLine();
+            outFile.WriteLine("@Html.ActionLink(\"Create New\", \"Create\", \"Customer\", null, new { @class = \"btn btn-sm btn-primary\" })");
 
             outFile.Close();
 

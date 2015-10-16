@@ -15,13 +15,16 @@ namespace Hans.CodeGen.App
         public static void Generate(DatabaseInfo db)
         {
             var path = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorController);
+            var path1 = string.Format(@"{0}\{1}\EF", db.OutputDirectory, DirectoryType.RazorController);
+            var path2 = string.Format(@"{0}\{1}\NH", db.OutputDirectory, DirectoryType.RazorController);
 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2))
             {
                 throw new Exception("Output Directory does not exist");
             }
 
-            Folder.Create(path);
+            Folder.Create(path1);
+            Folder.Create(path2);
 
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
@@ -29,14 +32,15 @@ namespace Hans.CodeGen.App
             {
                 var className = tableName.UpperedFirstChar();
 
-                WriterForController(path, tableName, className, db);
+                WriterForController(path1, tableName, className, db, "EF");
+                WriterForController(path2, tableName, className, db, "NH");
             }
 
             WriterForErrorController(path, db);
 
             Console.WriteLine();
         }
-        private static void WriterForController(string path, string tableName, string className, DatabaseInfo db)
+        private static void WriterForController(string path, string tableName, string className, DatabaseInfo db, string repo)
         {
             var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var defaultSortColumn = db.Schemas.Where(p => p.Table == tableName).Select(x => x.Column).FirstOrDefault();
@@ -58,11 +62,23 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("{");
             outFile.WriteLine("    public class {0}Controller : Controller", className);
             outFile.WriteLine("    {");
-            outFile.WriteLine("        private {0}Context db = new {0}Context();", db.ApplicationName);
-            outFile.WriteLine("        //public IRepository<{0}> {0}Repository {{ get; set; }}", className);
-            outFile.WriteLine();
-
-            WriterForIndex(tableName, className, db, outFile, defaultSortColumn);
+            if (repo == "EF")
+            {
+                outFile.WriteLine("        private {0}Context db = new {0}Context();", db.ApplicationName);
+                outFile.WriteLine("        //public IRepository<{0}> {0}Repository {{ get; set; }}", className);
+                outFile.WriteLine();
+            }
+            if (repo == "NH")
+            {
+                outFile.WriteLine("        private readonly IRepository<{0}> {0}Repository;", className);
+                outFile.WriteLine();
+                outFile.WriteLine("        public {0}Controller(ISession session)", className);
+                outFile.WriteLine("        {");
+                outFile.WriteLine("            {0}Repository = new Repository<{0}>(session);", className);
+                outFile.WriteLine("        }");
+                outFile.WriteLine();
+            }
+            WriterForIndex(tableName, className, db, outFile, defaultSortColumn, repo);
             WriterForDetails(className, outFile);
             WriterForCreate(className, outFile, includeColumns);
             WriterForEdit(className, outFile, includeColumns);
@@ -240,12 +256,42 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
         }
 
-        private static void WriterForIndex(string tableName, string className, DatabaseInfo db, StreamWriter outFile, string defaultSortColumn)
+        private static void WriterForIndex(string tableName, string className, DatabaseInfo db, StreamWriter outFile, string defaultSortColumn, string repo)
         {
+            var firstSchema = db.Schemas.Where(p => p.Table == tableName).First();
+            var lastSchema = db.Schemas.Where(p => p.Table == tableName).Last();
+
             outFile.WriteLine("        // GET: /{0}/", className);
-            outFile.WriteLine("        public async Task<ActionResult> Index(int? page, string sort = \"{0}\", bool asc = true)", defaultSortColumn.ToLower());
+            outFile.WriteLine("        public async Task<ActionResult> Index(int? page, string sort = \"{0}\", bool asc = true, string query = \"\")", defaultSortColumn.ToLower());
             outFile.WriteLine("        {");
-            outFile.WriteLine("            var {0}s = db.{1}.OrderBy(x => x.{2});", className.ToLower(), className, defaultSortColumn);
+            if (repo == "EF")
+            {
+                outFile.WriteLine("            var list = db.{1}.OrderBy(x => x.{2});", className.ToLower(), className, defaultSortColumn);
+            }
+            if (repo == "NH")
+            {
+                outFile.WriteLine("            var list = {0}Repository.FindAll();", className.ToLower());
+                outFile.WriteLine();
+                outFile.WriteLine("            if (!string.IsNullOrEmpty(query))");
+                outFile.WriteLine("            {");
+                outFile.WriteLine("                ViewBag.CurrentQuery = query;", className.ToLower());
+                outFile.WriteLine();
+                outFile.WriteLine("                list = list.Where(p => ");
+
+                foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+                {
+                    var columnName = s.Column;
+
+                    if (s.Equals(firstSchema))
+                        outFile.WriteLine("                    p.{0}.ToUpper().Contains(query.ToUpper())", columnName);
+                    else if (s.Equals(lastSchema))
+                        outFile.WriteLine("                    || p.{0}.ToUpper().Contains(query.ToUpper());", columnName);
+                    else
+                        outFile.WriteLine("                    || p.{0}.ToUpper().Contains(query.ToUpper())", columnName);
+                }
+
+                outFile.WriteLine("            }");
+            }
             outFile.WriteLine();
             outFile.WriteLine("            switch (sort.ToLower())");
             outFile.WriteLine("            {");
@@ -255,7 +301,7 @@ namespace Hans.CodeGen.App
                 var columnName = s.Column;
 
                 outFile.WriteLine("                case \"{0}\":", columnName.ToLower());
-                outFile.WriteLine("                    {0}s = asc ? {0}s.OrderBy(p => p.{1}) : {0}s.OrderByDescending(p => p.{1});", className.ToLower(), columnName);
+                outFile.WriteLine("                    list = asc ? list.OrderBy(p => p.{1}) : list.OrderByDescending(p => p.{1});", className.ToLower(), columnName);
                 outFile.WriteLine("                    break;");
             }
 
@@ -263,17 +309,26 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
             outFile.WriteLine("            var model = new {0}Model();", className);
             outFile.WriteLine("            model.PageSize = int.Parse(ConfigurationManager.AppSettings[\"PageSize\"]);");
-            outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)db.{0}.Count() / model.PageSize);", className);
+            if (repo == "EF")
+            {
+                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)db.{0}.Count() / model.PageSize);", className);
+            }
+
+            if (repo == "NH")
+            {
+                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)list.Count() / model.PageSize);", className);
+            }
+
             outFile.WriteLine("            model.CurrentPage = page ?? 1;");
             outFile.WriteLine();
-            outFile.WriteLine("            model.{0}s = await {0}s", className.ToLower(), className);
+            outFile.WriteLine("            model.{0}s = await list", className.ToLower(), className);
             outFile.WriteLine("                .Skip((model.CurrentPage - 1) * model.PageSize)");
             outFile.WriteLine("                .Take(model.PageSize)  ");
             outFile.WriteLine("                .ToListAsync();");
             outFile.WriteLine();
             outFile.WriteLine("            model.PageIndex = model.PageSize * (model.CurrentPage - 1);");
             outFile.WriteLine("            model.Sort = sort;");
-            outFile.WriteLine("            model.IsAsc = asc;);");
+            outFile.WriteLine("            model.IsAsc = asc;");
             outFile.WriteLine();
             outFile.WriteLine("            return View(model);");
             outFile.WriteLine("        }");

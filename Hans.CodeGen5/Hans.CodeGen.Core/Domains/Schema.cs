@@ -47,7 +47,7 @@ namespace Hans.CodeGen.Core.Domains
                     break;
                 case Commons.MsSqlDataType.Char:
                 case Commons.MsSqlDataType.NChar:
-                    type = Commons.MsSqlDataType.Char;
+                    type = Commons.MsSqlDataType.String;
                     break;
                 case Commons.MsSqlDataType.Money:
                     type = Commons.MsSqlDataType.Decimal;
@@ -68,6 +68,7 @@ namespace Hans.CodeGen.Core.Domains
                 case Commons.MsSqlDataType.SmallInt:
                     type = Commons.MsSqlDataType.Int;
                     break;
+                case Commons.MsSqlDataType.Date:
                 case Commons.MsSqlDataType.DateTime:
                 case Commons.MsSqlDataType.SmallDateTime:
                     type = Commons.MsSqlDataType.DateAndTime;
