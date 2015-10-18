@@ -79,7 +79,7 @@ namespace Hans.CodeGen.App
                 outFile.WriteLine();
             }
             WriterForIndex(tableName, className, db, outFile, defaultSortColumn, repo);
-            WriterForDetails(className, outFile);
+            WriterForDetails(tableName, className, outFile, db, repo);
             WriterForCreate(className, outFile, includeColumns);
             WriterForEdit(className, outFile, includeColumns);
             WriterForDelete(className, outFile);
@@ -234,8 +234,12 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
         }
 
-        private static void WriterForDetails(string className, StreamWriter outFile)
+        private static void WriterForDetails(string tableName, string className, StreamWriter outFile, DatabaseInfo db, string repo)
         {
+            //var id = db.Schemas.Where(p => p.Table == tableName && p.ConstraintType == "PK").FirstOrDefault().Column;
+            var id = db.Schemas.Where(p => p.Table == tableName).FirstOrDefault().Column;
+            var lastSchema = db.Schemas.Where(p => p.Table == tableName).Last();
+
             outFile.WriteLine("        // GET: /{0}/Details/5", className);
             outFile.WriteLine("        public async Task<ActionResult> Details(int? id)");
             outFile.WriteLine("        {");
@@ -244,14 +248,42 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            var {0} = db.{1}s.FindAsync(id);", className.ToLower(), className);
+            if (repo == "EF")
+            {
+                outFile.WriteLine("            var {0} = db.{1}s.FindAsync(id);", className.LoweredFirstChar(), className);
+            }
+            if (repo == "NH")
+            {
+                outFile.WriteLine("            var {0} = {1}Repository.FindOneBy(p => p.{2} == id);", className.LoweredFirstChar(), className, id);
+            }
             outFile.WriteLine();
-            outFile.WriteLine("            if ({0} == null)", className.ToLower());
+            outFile.WriteLine("            if ({0} == null)", className.LoweredFirstChar());
             outFile.WriteLine("            {");
             outFile.WriteLine("                return HttpNotFound();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            var model = new {0}()", className);
+            outFile.WriteLine("            {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                var columnName = s.Column;
+                if (s.ColumnType != "PK")
+                {
+                    if (s.Equals(lastSchema))
+                    {
+                        outFile.WriteLine("                {0} = model.{0}", columnName);
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = model.{0},", columnName);
+                    }
+                }
+            }
+
+            outFile.WriteLine("            };");
+            outFile.WriteLine();
+            outFile.WriteLine("            return View(model);");
             outFile.WriteLine("        }");
             outFile.WriteLine();
         }

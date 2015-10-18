@@ -176,6 +176,7 @@ namespace Hans.CodeGen.App
             {
                 outFile.WriteLine("                <td>@item.{0}</td>", s.Column);
             }
+
             outFile.WriteLine("                <td>");
             outFile.WriteLine("                    <div class=\"btn-group\">");
             outFile.WriteLine("                        <a href=\"#\" class=\"btn btn-xs btn-default\">Action</a>");
@@ -262,32 +263,43 @@ namespace Hans.CodeGen.App
             var textPath = string.Format(@"{0}\{1}\{2}.cshtml", path, className.UpperedFirstChar(), CreationType.Details);
             var outFile = File.CreateText(textPath);
 
-            outFile.WriteLine("@model {0}.Models.{1}Model", db.NamespaceCs, className);
+            outFile.WriteLine("@model {0}.Web.Models.{1}Model", db.NamespaceCs, className);
             outFile.WriteLine("");
             outFile.WriteLine("@{");
-            outFile.WriteLine("    ViewBag.Title = \"Details - {0}\";", className);
+            outFile.WriteLine("    ViewBag.Title = \"{0}\";", className);
+            outFile.WriteLine("    Layout = \"~/Views/Shared/_Layout.cshtml\";");
             outFile.WriteLine("}");
             outFile.WriteLine("");
-            outFile.WriteLine("<h2>@ViewBag.Title</h2>");
+            outFile.WriteLine("<div class=\"page-header\">");
+            outFile.WriteLine("    <h2>{0} <small>{0} details</small></h2>", className);
+            outFile.WriteLine("</div>");
+            outFile.WriteLine("");
+            outFile.WriteLine("<div class=\"clearfix\"></div>");
             outFile.WriteLine("");
             outFile.WriteLine("<div class=\"form-horizontal\">");
-
             foreach (var s in db.Schemas.Where(p => p.Table == tableName))
             {
                 outFile.WriteLine("    <div class=\"form-group\">");
                 outFile.WriteLine("        @Html.LabelFor(model => model.{0}, new {{ @class = \"control-label col-md-2\" }})", s.Column);
                 outFile.WriteLine("        <div class=\"col-md-10\">");
                 outFile.WriteLine("            @Html.LabelFor(model => model.{0})", s.Column);
+                if (s.MsSqlDataType() == MsSqlDataType.DateTime)
+                {
+                    outFile.WriteLine("            @Html.TextBoxFor(model => model.{0}, \"{{0:dd/MM/yyyy}}\", new { @class = \"form-control input-sm\" })", s.Column);
+                }
+                else
+                {
+                    outFile.WriteLine("            @Html.TextBoxFor(model => model.{0}, new {{ @class = \"form-control input-sm\" }})", s.Column);
+                }
                 outFile.WriteLine("        </div>");
                 outFile.WriteLine("    </div>");
                 outFile.WriteLine("");
             }
-
-            outFile.WriteLine("    <div class=\"form-group\">");
-            outFile.WriteLine("        <div class=\"col-md-offset-2 col-md-10\">");
-            outFile.WriteLine("            @Html.ActionLink(\"Back to List\", \"Index\") | @Html.ActionLink(\"Edit\", \"Edit\", new {{ id = Model.{0} }})", id);
-            outFile.WriteLine("        </div>");
-            outFile.WriteLine("    </div>");
+            outFile.WriteLine("</div>");
+            outFile.WriteLine("");
+            outFile.WriteLine("<div class=\"form-group\">");
+            outFile.WriteLine("    @Html.ActionLink(\"Edit\", \"Edit\", \"Customer\", null, new {{ id = Model.{0}, @class = \"btn btn-sm btn-primary\" }})", id);
+            outFile.WriteLine("    @Html.ActionLink(\"Back to List\", \"Index\", \"Customer\", null, new {{ @class = \"btn btn-sm btn-primary\" }})", id);
             outFile.WriteLine("</div>");
             outFile.WriteLine("");
 
