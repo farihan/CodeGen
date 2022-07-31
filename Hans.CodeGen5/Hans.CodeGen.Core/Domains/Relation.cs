@@ -13,5 +13,6 @@ namespace Hans.CodeGen.Core.Domains
         public string PkConstraintColumn { get; set; }
         public string FkConstraintColumn { get; set; }
         public string DeleteRule { get; set; }
+        public string RelationType { get; set; }
     }
 }

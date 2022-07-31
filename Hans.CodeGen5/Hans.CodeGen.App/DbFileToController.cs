@@ -40,33 +40,71 @@ namespace Hans.CodeGen.App
 
             Console.WriteLine();
         }
+
         private static void WriterForController(string path, string tableName, string className, DatabaseInfo db, string repo)
         {
             var textPath = string.Format(@"{0}\{1}{2}.cs", path, className, CreationType.Controller);
             var defaultSortColumn = db.Schemas.Where(p => p.Table == tableName).Select(x => x.Column).FirstOrDefault();
-            var includeColumns = string.Join(", ", db.Schemas.Where(p => p.Table == tableName).Select(x => x.Column).ToArray());
+
+            var list = db.Schemas.Where(p => p.Table == tableName).Select(x => string.Format("{0}", x.Column)).ToList();
+            var items = new List<string>();
+            foreach(var item in list)
+            {
+                items.Add(item);
+                if (item == "Image")
+                {
+                    items.Add("ImageUpdate");
+                }
+                else if (item == "Attachment")
+                {
+                    items.Add("AttachmentUpdate");
+                }
+            }
+            //if (list.Any(x => x == "Image"))
+            //    list.Add("ImageUpdate");
+
+            //if (list.Any(x => x == "Attachment"))
+            //    list.Add("AttachmentUpdate");
+
+            var includeColumns = string.Join(", ", items.ToArray());
 
             var outFile = File.CreateText(textPath);
 
-            outFile.WriteLine("using System;");
-            outFile.WriteLine("using System.Collections.Generic;");
-            outFile.WriteLine("using System.Data;");
-            outFile.WriteLine("using System.Data.Entity;");
-            outFile.WriteLine("using System.Linq;");
-            outFile.WriteLine("using System.Net;");
-            outFile.WriteLine("using System.Web;");
-            outFile.WriteLine("using System.Web.Mvc;");
-            outFile.WriteLine("using System.Configuration");
+            //outFile.WriteLine("using System;");
+            //outFile.WriteLine("using System.Collections.Generic;");
+            //outFile.WriteLine("using System.Data;");
+            //outFile.WriteLine("using System.Data.Entity;");
+            //outFile.WriteLine("using System.Linq;");
+            //outFile.WriteLine("using System.Net;");
+            //outFile.WriteLine("using System.Web;");
+            //outFile.WriteLine("using System.Web.Mvc;");
+            //outFile.WriteLine("using System.Configuration");
+            outFile.WriteLine("using CFF.DataAccess;");
+            outFile.WriteLine("using CFF.Models;");
+            outFile.WriteLine("using CFF.Helpers;");
+            outFile.WriteLine("using CFF.Helpers.Common;");
+            outFile.WriteLine("using CFF.ViewModels;");
+            outFile.WriteLine("using Microsoft.AspNetCore.Mvc;");
+            outFile.WriteLine("using Microsoft.EntityFrameworkCore;");
             outFile.WriteLine();
-            outFile.WriteLine("namespace {0}.Controllers", db.NamespaceCs);
+            outFile.WriteLine("namespace {0}.Controllers", db.ApplicationName);
             outFile.WriteLine("{");
             outFile.WriteLine("    public class {0}Controller : Controller", className);
             outFile.WriteLine("    {");
             if (repo == "EF")
             {
-                outFile.WriteLine("        private {0}Context db = new {0}Context();", db.ApplicationName);
-                outFile.WriteLine("        //public IRepository<{0}> {0}Repository {{ get; set; }}", className);
+                outFile.WriteLine("        private readonly {0}Context _context;", db.ApplicationName);
+                outFile.WriteLine("        private readonly string _username;");
+                outFile.WriteLine("        private IWebHostEnvironment _environment;");
+                outFile.WriteLine("         private const string _folderType = \"{0}\";", tableName);
+                //outFile.WriteLine("        //public IRepository<{0}> {0}Repository {{ get; set; }}", className);
                 outFile.WriteLine();
+                outFile.WriteLine("        public {0}Controller({1}Context context, IWebHostEnvironment environment)", className, db.ApplicationName);
+                outFile.WriteLine("        {");
+                outFile.WriteLine("            _context = context;");
+                outFile.WriteLine("            _username = \"User1\";");
+                outFile.WriteLine("            _environment = environment;");
+                outFile.WriteLine("        }");
             }
             if (repo == "NH")
             {
@@ -80,20 +118,20 @@ namespace Hans.CodeGen.App
             }
             WriterForIndex(tableName, className, db, outFile, defaultSortColumn, repo);
             WriterForDetails(tableName, className, outFile, db, repo);
-            WriterForCreate(className, outFile, includeColumns);
-            WriterForEdit(className, outFile, includeColumns);
-            WriterForDelete(className, outFile);
-
-            outFile.WriteLine("        protected override void Dispose(bool disposing)");
-            outFile.WriteLine("        {");
-            outFile.WriteLine("            if (disposing)");
-            outFile.WriteLine("            {");
-            outFile.WriteLine("                db.Dispose();");
-            outFile.WriteLine("                //{0}Repository.Dispose();", className);
-            outFile.WriteLine("            }");
-            outFile.WriteLine();
-            outFile.WriteLine("            base.Dispose(disposing);");
-            outFile.WriteLine("        }");
+            WriterForCreate(className, outFile, db, includeColumns, repo);
+            WriterForEdit(className, outFile, db, includeColumns);
+            WriterForDelete(className, db, outFile);
+            WriterForMapper(className, outFile, db);
+            //outFile.WriteLine("        protected override void Dispose(bool disposing)");
+            //outFile.WriteLine("        {");
+            //outFile.WriteLine("            if (disposing)");
+            //outFile.WriteLine("            {");
+            //outFile.WriteLine("                db.Dispose();");
+            //outFile.WriteLine("                //{0}Repository.Dispose();", className);
+            //outFile.WriteLine("            }");
+            //outFile.WriteLine();
+            //outFile.WriteLine("            base.Dispose(disposing);");
+            //outFile.WriteLine("        }");
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
 
@@ -102,72 +140,136 @@ namespace Hans.CodeGen.App
             Console.Write(string.Format("\n{0} created", textPath));
         }
 
-        private static void WriterForDelete(string className, StreamWriter outFile)
+        private static void WriterForDelete(string className, DatabaseInfo db, StreamWriter outFile)
         {
+            var hasStatus = db.Schemas.Any(p => p.Table == className && p.Column == "Status");
+            var hasDeletedAt = db.Schemas.Any(p => p.Table == className && p.Column == "DeletedAt");
+            var hasDeletedBy = db.Schemas.Any(p => p.Table == className && p.Column == "DeletedBy");
+
             outFile.WriteLine("        // GET: /{0}/Delete/5", className);
-            outFile.WriteLine("        public async Task<ActionResult> Delete(int? id, bool? saveChangesError = false)");
+            outFile.WriteLine("        public async Task<ActionResult> Delete(int? id)");
             outFile.WriteLine("        {");
             outFile.WriteLine("            if (id == null)");
             outFile.WriteLine("            {");
-            outFile.WriteLine("                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);");
+            outFile.WriteLine("                return new BadRequestResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            if (saveChangesError.GetValueOrDefault())");
+            outFile.WriteLine("            var {0} = await _context.{1}.FindAsync(id);", className.LoweredFirstChar(), className);
+            outFile.WriteLine();
+            outFile.WriteLine("            if ({0} == null)", className.LoweredFirstChar());
             outFile.WriteLine("            {");
-            outFile.WriteLine("                ViewBag.ErrorMessage = \"Delete failed. Try again, and if the problem persists see your system administrator.\";");
+            outFile.WriteLine("                return new NotFoundResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            var {0} = db.{1}s.FindAsync(id);", className.ToLower(), className);
+            outFile.WriteLine("            var model = To{0}ReadViewModel({1});", className, className.LoweredFirstChar());
             outFile.WriteLine();
-            outFile.WriteLine("            if ({0} == null)", className.ToLower());
-            outFile.WriteLine("            {");
-            outFile.WriteLine("                return HttpNotFound();");
-            outFile.WriteLine("            }");
-            outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            return View(model);", className.LoweredFirstChar());
             outFile.WriteLine("        }");
             outFile.WriteLine();
-
             outFile.WriteLine("        // POST: /{0}/Delete/5", className);
-            outFile.WriteLine("        [HttpPost]");
+            outFile.WriteLine("        [HttpPost, ActionName(\"Delete\")]");
             outFile.WriteLine("        [ValidateAntiForgeryToken]");
-            outFile.WriteLine("        public async Task<ActionResult> Delete(int id)");
+            outFile.WriteLine("        public async Task<ActionResult> DeleteConfirmed(int? id)");
             outFile.WriteLine("        {");
-            outFile.WriteLine("            try");
+            outFile.WriteLine("            if (id == null)");
             outFile.WriteLine("            {");
-            outFile.WriteLine("                db.Entry({0}).State = EntityState.Modified;", className.ToLower());
-            outFile.WriteLine("                await db.SaveChangesAsync()");
-            outFile.WriteLine("                return RedirectToAction(\"Index\");");
-            outFile.WriteLine("            }");
-            outFile.WriteLine("            catch (RetryLimitExceededException /* ex */)");
-            outFile.WriteLine("            {");
-            outFile.WriteLine("                //Log the error (uncomment ex variable name and add a line here to write a log.");
-            outFile.WriteLine("                ModelState.AddModelError(\"\", \"Unable to save changes. Try again, and if the problem persists see your system administrator.\");");
+            outFile.WriteLine("                return new BadRequestResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            var {0} = await _context.{1}.FirstOrDefaultAsync(x => x.Id == id);", className.LoweredFirstChar(), className);
+            outFile.WriteLine();
+            outFile.WriteLine("            if ({0} == null)", className.LoweredFirstChar());
+            outFile.WriteLine("            {");
+            outFile.WriteLine("                return new NotFoundResult();");
+            outFile.WriteLine("            }");
+            outFile.WriteLine();
+
+            if (hasDeletedAt)
+            {
+                outFile.WriteLine("            {0}.UpdatedAt = DateTime.Now;", className.LoweredFirstChar());
+                outFile.WriteLine("            {0}.UpdatedBy = _username;", className.LoweredFirstChar());
+                outFile.WriteLine("            {0}.DeletedAt = DateTime.Now;", className.LoweredFirstChar());
+                outFile.WriteLine("            {0}.DeletedBy = _username;", className.LoweredFirstChar());
+                outFile.WriteLine();
+                outFile.WriteLine("            _context.Entry({0}).State = EntityState.Modified;", className.LoweredFirstChar());
+            }
+            else
+            {
+                outFile.WriteLine("            _context.{0}.Remove({1});", className, className.LoweredFirstChar());
+            }
+
+            outFile.WriteLine("            await _context.SaveChangesAsync();");
+            outFile.WriteLine();
+            outFile.WriteLine("            return RedirectToAction(\"Index\");");
             outFile.WriteLine("        }");
             outFile.WriteLine();
         }
 
-        private static void WriterForEdit(string className, StreamWriter outFile, string includeColumns)
+        private static void WriterForEdit(string className, StreamWriter outFile, DatabaseInfo db, string includeColumns)
         {
+            var unusedFields = db.RemoveFields.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+
             outFile.WriteLine("        // GET: /{0}/Edit/5", className);
             outFile.WriteLine("        public async Task<ActionResult> Edit(int? id)");
             outFile.WriteLine("        {");
             outFile.WriteLine("            if (id == null)");
             outFile.WriteLine("            {");
-            outFile.WriteLine("                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);");
+            outFile.WriteLine("                return new BadRequestResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            var {0} = db.{1}s.FindAsync(id);", className.ToLower(), className);
+            outFile.WriteLine("            var {0} = await _context.{1}.FindAsync(id);", className.LoweredFirstChar(), className);
             outFile.WriteLine();
-            outFile.WriteLine("            if ({0} == null)", className.ToLower());
+            outFile.WriteLine("            if ({0} == null)", className.LoweredFirstChar());
             outFile.WriteLine("            {");
-            outFile.WriteLine("                return HttpNotFound();");
+            outFile.WriteLine("                return new NotFoundResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            var model = new {0}UpdateViewModel()", className);
+            outFile.WriteLine("            {");
+
+            var lastSchema = db.Schemas.Where(p => p.Table == className).Last();
+            foreach (var s in db.Schemas.Where(p => p.Table == className))
+            {
+                var columnName = s.Column;
+
+                if (s.Equals(lastSchema))
+                {
+                    if (columnName == "Status")
+                    {
+                        outFile.WriteLine("                Status = (StatusType){0}.Status", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Featured")
+                    {
+                        //outFile.WriteLine("                Featured = {0}.Featured ? 1 : 0", className.LoweredFirstChar());
+                        outFile.WriteLine("                Featured = {0}.Featured == 1 ? true : false", className.LoweredFirstChar());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0}", columnName, className.LoweredFirstChar());
+                    }
+                }
+                else
+                {
+                    if (columnName == "Status")
+                    {
+                        outFile.WriteLine("                Status = (StatusType){0}.Status,", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Featured")
+                    {
+                        //outFile.WriteLine("                Featured = {0}.Featured ? 1 : 0,", className.LoweredFirstChar());
+                        outFile.WriteLine("                Featured = {0}.Featured == 1 ? true : false,", className.LoweredFirstChar());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0},", columnName, className.LoweredFirstChar());
+                    }
+                }
+            }
+
+            outFile.WriteLine("            };");
+            outFile.WriteLine();
+
+            outFile.WriteLine("            return View(model);", className.LoweredFirstChar());
             outFile.WriteLine("        }");
             outFile.WriteLine();
 
@@ -176,34 +278,107 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.");
             outFile.WriteLine("        [HttpPost]");
             outFile.WriteLine("        [ValidateAntiForgeryToken]");
-            outFile.WriteLine("        public async Task<ActionResult> Edit([Bind(Include = \"{0}\")]{1} {2}", includeColumns, className, className.ToLower());
+            outFile.WriteLine("        public async Task<ActionResult> Edit([Bind(\"{0}\")]{1}UpdateViewModel model)", includeColumns, className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            try");
             outFile.WriteLine("            {");
             outFile.WriteLine("                if (ModelState.IsValid)");
             outFile.WriteLine("                {");
-            outFile.WriteLine("                    db.Entry({0}).State = EntityState.Modified;", className.ToLower());
-            outFile.WriteLine("                    await db.SaveChangesAsync()");
+            outFile.WriteLine("                    var {0} = await _context.{1}.FindAsync(model.Id);", className.LoweredFirstChar(), className);
+            outFile.WriteLine();
+            outFile.WriteLine("                    if ({0} == null)", className.LoweredFirstChar());
+            outFile.WriteLine("                    {");
+            outFile.WriteLine("                        return new NotFoundResult();");
+            outFile.WriteLine("                    }");
+            outFile.WriteLine();
+
+            foreach (var s in db.Schemas.Where(p => p.Table == className))
+            {
+                if (unusedFields.Any(x => x == s.Column))
+                    continue;
+
+                var columnName = s.Column;
+                if (s.ColumnType != "PK")
+                {
+                    if (columnName == "Status")
+                    {
+                        outFile.WriteLine("                    {0}.Status = (int)model.Status;", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Image")
+                    {
+                        outFile.WriteLine("                    if (model.ImageUpdate is not null)", className.LoweredFirstChar());
+                        outFile.WriteLine("                    {");
+                        outFile.WriteLine("                        {0}.Image = model.ImageUpdate?.FileName;", className.LoweredFirstChar());
+                        outFile.WriteLine("                    }");
+                    }
+                    else if (columnName == "Attachment")
+                    {
+                        outFile.WriteLine("                    if (model.AttachmentUpdate is not null)", className.LoweredFirstChar());
+                        outFile.WriteLine("                    {");
+                        outFile.WriteLine("                        {0}.Attachment = model.AttachmentUpdate?.FileName;", className.LoweredFirstChar());
+                        outFile.WriteLine("                    }");
+                    }
+                    else if (columnName == "Featured")
+                    {
+                        outFile.WriteLine("                    {0}.Featured = model.Featured ? 1 : 0;", className.LoweredFirstChar());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                    {1}.{0} = model.{0};", columnName, className.LoweredFirstChar());
+                    }
+                }
+            }
+            outFile.WriteLine("                    {0}.UpdatedAt = DateTime.Now;", className.LoweredFirstChar());
+            outFile.WriteLine("                    {0}.UpdatedBy = _username;", className.LoweredFirstChar());
+            outFile.WriteLine();
+            outFile.WriteLine("                    _context.Entry({0}).State = EntityState.Modified;", className.LoweredFirstChar());
+            outFile.WriteLine("                    await _context.SaveChangesAsync();");
+            outFile.WriteLine();
+
+            var hasImage = db.Schemas.Any(p => p.Table == className && p.Column == "Image");
+            if (hasImage)
+            {
+                outFile.WriteLine("                    if (model.ImageUpdate is not null)");
+                outFile.WriteLine("                    {");
+                outFile.WriteLine("                        Uploader.UploadImage(_environment.WebRootPath, _folderType, {0}.Id, model.ImageUpdate);", className.LoweredFirstChar());
+                outFile.WriteLine("                    }");
+                outFile.WriteLine();
+            }
+
+            var hasAttachment = db.Schemas.Any(p => p.Table == className && p.Column == "Attachment");
+            if (hasAttachment)
+            {
+                outFile.WriteLine("                    if (model.AttachmentUpdate is not null)");
+                outFile.WriteLine("                    {");
+                outFile.WriteLine("                        Uploader.UploadAttachment(_environment.WebRootPath, _folderType, {0}.Id, model.AttachmentUpdate);", className.LoweredFirstChar());
+                outFile.WriteLine("                    }");
+                outFile.WriteLine();
+            }
             outFile.WriteLine("                    return RedirectToAction(\"Index\");");
             outFile.WriteLine("                }");
             outFile.WriteLine("            }");
-            outFile.WriteLine("            catch (RetryLimitExceededException /* ex */)");
+            //outFile.WriteLine("            catch (RetryLimitExceededException /* ex */)");
+            outFile.WriteLine("            catch (Exception ex)");
             outFile.WriteLine("            {");
             outFile.WriteLine("                //Log the error (uncomment ex variable name and add a line here to write a log.");
-            outFile.WriteLine("                ModelState.AddModelError(\"\", \"Unable to save changes. Try again, and if the problem persists see your system administrator.\");");
+            outFile.WriteLine("                ModelState.AddModelError(ex.Message, \"Unable to save changes. Try again, and if the problem persists see your system administrator.\");");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            return View(model);", className.LoweredFirstChar());
             outFile.WriteLine("        }");
             outFile.WriteLine();
         }
 
-        private static void WriterForCreate(string className, StreamWriter outFile, string includeColumns)
+        private static void WriterForCreate(string className, StreamWriter outFile, DatabaseInfo db, string includeColumns, string repo)
         {
+            var unusedFields = db.RemoveFields.Split(new[] { "," } , StringSplitOptions.RemoveEmptyEntries);
+
             outFile.WriteLine("        // GET: /{0}/Create", className);
             outFile.WriteLine("        public ActionResult Create()");
             outFile.WriteLine("        {");
-            outFile.WriteLine("            return View();");
+            outFile.WriteLine("            var model = new {0}CreateViewModel();", className);
+            outFile.WriteLine();
+            outFile.WriteLine("            return View(model);");
             outFile.WriteLine("        }");
             outFile.WriteLine();
 
@@ -212,24 +387,125 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.");
             outFile.WriteLine("        [HttpPost]");
             outFile.WriteLine("        [ValidateAntiForgeryToken]");
-            outFile.WriteLine("        public async Task<ActionResult> Create([Bind(Include = \"{0}\")]{1} {2}", includeColumns, className, className.ToLower());
+            outFile.WriteLine("        public async Task<ActionResult> Create([Bind(\"{0}\")]{1}CreateViewModel model)", includeColumns, className);
             outFile.WriteLine("        {");
             outFile.WriteLine("            try");
             outFile.WriteLine("            {");
             outFile.WriteLine("                if (ModelState.IsValid)");
             outFile.WriteLine("                {");
-            outFile.WriteLine("                    db.{0}s.Add({1});", className, className.ToLower());
-            outFile.WriteLine("                    await db.SaveChangesAsync()");
-            outFile.WriteLine("                    return RedirectToAction(\"Index\");");
+            outFile.WriteLine("                    var {0} = new {1}()", className.LoweredFirstChar(), className);
+            outFile.WriteLine("                    {");
+
+            var lastSchema = db.Schemas.Where(p => p.Table == className).Last();
+            foreach (var s in db.Schemas.Where(p => p.Table == className))
+            {
+                if (unusedFields.Any(x => x == s.Column))
+                    continue;
+
+                var columnName = s.Column;
+                if (s.ColumnType != "PK")
+                {
+                    if (s.Equals(lastSchema))
+                    {
+                        if (columnName == "Status")
+                        {
+                            outFile.WriteLine("                        Status = (int)model.Status");
+                        }
+                        else if (columnName == "Image")
+                        {
+                            outFile.WriteLine("                        Image = model.Image?.FileName");
+                        }
+                        else if (columnName == "Attachment")
+                        {
+                            outFile.WriteLine("                        Attachment = model.Attachment?.FileName");
+                        }
+                        else if (columnName == "Featured")
+                        {
+                            outFile.WriteLine("                        Featured = model.Featured ? 1 : 0");
+                        }
+                        else
+                        {
+                            outFile.WriteLine("                        {0} = model.{0}", columnName, className.LoweredFirstChar());
+                        }
+                    }
+                    else
+                    {
+                        if (columnName == "Status")
+                        {
+                            outFile.WriteLine("                        Status = (int)model.Status,");
+                        }
+                        else if (columnName == "Image")
+                        {
+                            outFile.WriteLine("                        Image = model.Image?.FileName,");
+                        }
+                        else if (columnName == "Attachment")
+                        {
+                            outFile.WriteLine("                        Attachment = model.Attachment?.FileName,");
+                        }
+                        else if (columnName == "Featured")
+                        {
+                            outFile.WriteLine("                        Featured = model.Featured ? 1 : 0,");
+                        }
+                        else
+                        {
+                            outFile.WriteLine("                        {0} = model.{0},", columnName, className.LoweredFirstChar());
+                        }
+                    }
+                }
+            }
+
+            outFile.WriteLine("                        CreatedAt = DateTime.Now,");
+            outFile.WriteLine("                        UpdatedAt = DateTime.Now,");
+            outFile.WriteLine("                        CreatedBy = _username,");
+            outFile.WriteLine("                        UpdatedBy = _username");
+            outFile.WriteLine("                    };");
+            outFile.WriteLine();
+
+            if (repo == "EF")
+            {
+                outFile.WriteLine("                    _context.{0}.Add({1});", className, className.LoweredFirstChar());
+                outFile.WriteLine("                    await _context.SaveChangesAsync();");
+                outFile.WriteLine();
+
+                var hasImage = db.Schemas.Any(p => p.Table == className && p.Column == "Image");
+                if (hasImage)
+                {
+                    outFile.WriteLine("                    if (model.Image is not null)", className);
+                    outFile.WriteLine("                    {");
+                    outFile.WriteLine("                        Uploader.UploadImage(_environment.WebRootPath, _folderType, {0}.Id, model.Image);", className.LoweredFirstChar());
+                    outFile.WriteLine("                    }");
+                    outFile.WriteLine();
+                }
+
+                var hasAttachment = db.Schemas.Any(p => p.Table == className && p.Column == "Attachment");
+                if (hasAttachment)
+                {
+                    outFile.WriteLine("                    if (model.Attachment is not null)");
+                    outFile.WriteLine("                    {");
+                    outFile.WriteLine("                        Uploader.UploadAttachment(_environment.WebRootPath, _folderType, {0}.Id, model.Attachment);", className.LoweredFirstChar());
+                    outFile.WriteLine("                    }");
+                    outFile.WriteLine();
+                }
+
+                outFile.WriteLine("                    return RedirectToAction(\"Index\");");
+            }
+
+            if (repo == "NH")
+            {
+                outFile.WriteLine("                    {0}Repository.Save({1});", className, className.LoweredFirstChar());
+                outFile.WriteLine("                    return RedirectToAction(\"Index\");");
+            }
+
             outFile.WriteLine("                }");
             outFile.WriteLine("            }");
-            outFile.WriteLine("            catch (RetryLimitExceededException /* ex */)");
+            //outFile.WriteLine("            catch (RetryLimitExceededException /* ex */)");
+            outFile.WriteLine("            catch (Exception ex)");
             outFile.WriteLine("            {");
             outFile.WriteLine("                //Log the error (uncomment ex variable name and add a line here to write a log.");
-            outFile.WriteLine("                ModelState.AddModelError(\"\", \"Unable to save changes. Try again, and if the problem persists see your system administrator.\");");
+            outFile.WriteLine("                ModelState.AddModelError(ex.Message, \"Unable to save changes. Try again, and if the problem persists see your system administrator.\");");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            return View({0});", className.ToLower());
+            outFile.WriteLine("            return View(model);", className.LoweredFirstChar());
             outFile.WriteLine("        }");
             outFile.WriteLine();
         }
@@ -245,12 +521,12 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        {");
             outFile.WriteLine("            if (id == null)");
             outFile.WriteLine("            {");
-            outFile.WriteLine("                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);");
+            outFile.WriteLine("                return new BadRequestResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
             if (repo == "EF")
             {
-                outFile.WriteLine("            var {0} = db.{1}s.FindAsync(id);", className.LoweredFirstChar(), className);
+                outFile.WriteLine("            var {0} = await _context.{1}.FindAsync(id);", className.LoweredFirstChar(), className);
             }
             if (repo == "NH")
             {
@@ -259,29 +535,10 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
             outFile.WriteLine("            if ({0} == null)", className.LoweredFirstChar());
             outFile.WriteLine("            {");
-            outFile.WriteLine("                return HttpNotFound();");
+            outFile.WriteLine("                return new NotFoundResult();");
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            var model = new {0}()", className);
-            outFile.WriteLine("            {");
-
-            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
-            {
-                var columnName = s.Column;
-                if (s.ColumnType != "PK")
-                {
-                    if (s.Equals(lastSchema))
-                    {
-                        outFile.WriteLine("                {0} = model.{0}", columnName);
-                    }
-                    else
-                    {
-                        outFile.WriteLine("                {0} = model.{0},", columnName);
-                    }
-                }
-            }
-
-            outFile.WriteLine("            };");
+            outFile.WriteLine("            var model = To{0}ReadViewModel({1});", className, className.LoweredFirstChar());
             outFile.WriteLine();
             outFile.WriteLine("            return View(model);");
             outFile.WriteLine("        }");
@@ -290,23 +547,35 @@ namespace Hans.CodeGen.App
 
         private static void WriterForIndex(string tableName, string className, DatabaseInfo db, StreamWriter outFile, string defaultSortColumn, string repo)
         {
+            var pluralization = new Pluralization();
             var firstSchema = db.Schemas.Where(p => p.Table == tableName).First();
             var lastSchema = db.Schemas.Where(p => p.Table == tableName).Last();
+            var hasStatus = db.Schemas.Any(p => p.Table == tableName && p.Column == "Status");
+            var hasDeletedBy = db.Schemas.Any(p => p.Table == tableName && p.Column == "DeletedBy");
 
             outFile.WriteLine("        // GET: /{0}/", className);
             outFile.WriteLine("        public async Task<ActionResult> Index(int? page, string sort = \"{0}\", bool asc = true, string query = \"\")", defaultSortColumn.ToLower());
             outFile.WriteLine("        {");
             if (repo == "EF")
             {
-                outFile.WriteLine("            var list = db.{1}.OrderBy(x => x.{2});", className.ToLower(), className, defaultSortColumn);
+                if (hasDeletedBy)
+                {
+                    outFile.WriteLine("            var list = _context.{1}.Where(x => x.DeletedBy == null).OrderBy(x => x.{2});", className.ToLower(), className, defaultSortColumn);
+                    //outFile.WriteLine("            var list = _context.{1}.OrderBy(x => x.{2}).Where(x => x.Status == 1);", className.ToLower(), className, defaultSortColumn);
+                }
+                else
+                {
+                    outFile.WriteLine("            var list = _context.{1}.OrderBy(x => x.{2});", className.ToLower(), className, defaultSortColumn);
+                    //outFile.WriteLine("            //var list = _context.{1}.OrderBy(x => x.{2}).Where(x => x.Status == 1);", className.ToLower(), className, defaultSortColumn);
+                }
             }
             if (repo == "NH")
             {
-                outFile.WriteLine("            var list = {0}Repository.FindAll();", className.ToLower());
+                outFile.WriteLine("            var list = {0}Repository.FindAll();", className.LoweredFirstChar());
                 outFile.WriteLine();
                 outFile.WriteLine("            if (!string.IsNullOrEmpty(query))");
                 outFile.WriteLine("            {");
-                outFile.WriteLine("                ViewBag.CurrentQuery = query;", className.ToLower());
+                outFile.WriteLine("                ViewBag.CurrentQuery = query;", className.LoweredFirstChar());
                 outFile.WriteLine();
                 outFile.WriteLine("                list = list.Where(p => ");
 
@@ -339,11 +608,11 @@ namespace Hans.CodeGen.App
 
             outFile.WriteLine("            }");
             outFile.WriteLine();
-            outFile.WriteLine("            var model = new {0}Model();", className);
-            outFile.WriteLine("            model.PageSize = int.Parse(ConfigurationManager.AppSettings[\"PageSize\"]);");
+            outFile.WriteLine("            var model = new {0}ViewModel();", className);
+            outFile.WriteLine("            model.PageSize = 10; //int.Parse(ConfigurationManager.AppSettings[\"PageSize\"]);");
             if (repo == "EF")
             {
-                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)db.{0}.Count() / model.PageSize);", className);
+                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)_context.{0}.Count() / model.PageSize);", className);
             }
 
             if (repo == "NH")
@@ -353,11 +622,14 @@ namespace Hans.CodeGen.App
 
             outFile.WriteLine("            model.CurrentPage = page ?? 1;");
             outFile.WriteLine();
-            outFile.WriteLine("            model.{0}s = await list", className.ToLower(), className);
+            outFile.WriteLine("            var models = await list");
             outFile.WriteLine("                .Skip((model.CurrentPage - 1) * model.PageSize)");
             outFile.WriteLine("                .Take(model.PageSize)  ");
             outFile.WriteLine("                .ToListAsync();");
             outFile.WriteLine();
+
+            var pluralWord = pluralization.Pluralize(className);
+            outFile.WriteLine("            model.{0} = To{1}ReadViewModels(models);", pluralWord, className);
             outFile.WriteLine("            model.PageIndex = model.PageSize * (model.CurrentPage - 1);");
             outFile.WriteLine("            model.Sort = sort;");
             outFile.WriteLine("            model.IsAsc = asc;");
@@ -396,6 +668,98 @@ namespace Hans.CodeGen.App
             outFile.Close();
             
             Console.Write(string.Format("\n{0} created", textPath));
+        }
+
+        private static void WriterForMapper(string className, StreamWriter outFile, DatabaseInfo db)
+        {
+            var pluralization = new Pluralization();
+
+            outFile.WriteLine("        public FileResult Download(int id, string downloadType, string attachment)");
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            var path = Path.Combine(_environment.WebRootPath, _folderType, string.Format($\"{id}\"), string.Format($\"{downloadType}\")) + \"\\\\\" + attachment;");
+            outFile.WriteLine("            var bytes = System.IO.File.ReadAllBytes(path);");
+            outFile.WriteLine();
+            outFile.WriteLine("            return File(bytes, \"application/octet-stream\", attachment);");
+            outFile.WriteLine("        }");
+            outFile.WriteLine();
+
+            outFile.WriteLine("        public static {0}ReadViewModel To{0}ReadViewModel({0} {1})", className, className.LoweredFirstChar());
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            var model = new {0}ReadViewModel()", className);
+            outFile.WriteLine("            {");
+
+            var lastSchema = db.Schemas.Where(p => p.Table == className).Last();
+            foreach (var s in db.Schemas.Where(p => p.Table == className))
+            {
+                //outFile.WriteLine("                {0} = {1}.{0},", s.Column, className.LoweredFirstChar());
+
+                var columnName = s.Column;
+
+                if (s.Equals(lastSchema))
+                {
+                    if (columnName == "Status")
+                    {
+                        outFile.WriteLine("                Status = (StatusType){0}.Status", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Image")
+                    {
+                        outFile.WriteLine("                Image = {0}.Image", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Attachment")
+                    {
+                        outFile.WriteLine("                Attachment = {0}.Attachment", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Featured")
+                    {
+                        outFile.WriteLine("                Featured = {0}.Featured == 1 ? true : false", className.LoweredFirstChar());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0}", columnName, className.LoweredFirstChar());
+                    }
+                }
+                else
+                {
+                    if (columnName == "Status")
+                    {
+                        outFile.WriteLine("                Status = (StatusType){0}.Status,", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Image")
+                    {
+                        outFile.WriteLine("                Image = {0}.Image,", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Attachment")
+                    {
+                        outFile.WriteLine("                Attachment = {0}.Attachment,", className.LoweredFirstChar());
+                    }
+                    else if (columnName == "Featured")
+                    {
+                        outFile.WriteLine("                Featured = {0}.Featured == 1 ? true : false,", className.LoweredFirstChar());
+                    }
+                    else
+                    {
+                        outFile.WriteLine("                {0} = {1}.{0},", columnName, className.LoweredFirstChar());
+                    }
+                }
+            }
+            outFile.WriteLine("            };");
+            outFile.WriteLine();
+            outFile.WriteLine("            return model;");
+            outFile.WriteLine("        }");
+            outFile.WriteLine();
+
+            var pluralWord = pluralization.Pluralize(className.LoweredFirstChar());
+            outFile.WriteLine("        public static List<{0}ReadViewModel> To{0}ReadViewModels(List<{0}> {1})", className, pluralWord);
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            var list = new List<{0}ReadViewModel>();", className);
+            outFile.WriteLine();
+            outFile.WriteLine("            foreach (var item in {0})", pluralWord);
+            outFile.WriteLine("            {");
+            outFile.WriteLine("                list.Add(To{0}ReadViewModel(item));", className);
+            outFile.WriteLine("            };");
+            outFile.WriteLine();
+            outFile.WriteLine("            return list;");
+            outFile.WriteLine("        }");
         }
     }
 }

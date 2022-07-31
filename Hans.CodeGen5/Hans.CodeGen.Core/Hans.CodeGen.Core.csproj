@@ -47,6 +47,7 @@
     <Compile Include="Commons\DirectoryType.cs" />
     <Compile Include="Commons\KeyType.cs" />
     <Compile Include="Commons\MsSqlDataType.cs" />
+    <Compile Include="Commons\RelationType.cs" />
     <Compile Include="Commons\SelectType.cs" />
     <Compile Include="Commons\UILineType.cs" />
     <Compile Include="Domains\Constraint.cs" />

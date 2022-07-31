@@ -19,5 +19,6 @@ namespace Hans.CodeGen.Core.Commons
         public const string ReadFromDbFile = "ReadFromDbFile";
         public const string RemoveChars = "RemoveChars";
         public const string ApplicationName = "ApplicationName";
+        public const string RemoveFields = "RemoveFields";
     }
 }

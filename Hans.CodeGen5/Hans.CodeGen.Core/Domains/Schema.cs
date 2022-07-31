@@ -70,6 +70,7 @@ namespace Hans.CodeGen.Core.Domains
                     break;
                 case Commons.MsSqlDataType.Date:
                 case Commons.MsSqlDataType.DateTime:
+                case Commons.MsSqlDataType.DateTime2:
                 case Commons.MsSqlDataType.SmallDateTime:
                     type = Commons.MsSqlDataType.DateAndTime;
                     break;
@@ -77,7 +78,7 @@ namespace Hans.CodeGen.Core.Domains
                 case Commons.MsSqlDataType.Text:
                 case Commons.MsSqlDataType.NVarChar:
                 case Commons.MsSqlDataType.VarChar:
-                    type = Commons.MsSqlDataType.String;
+                    type = Commons.MsSqlDataType.String2;
                     break;
             }
 

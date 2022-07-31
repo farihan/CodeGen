@@ -21,6 +21,7 @@ namespace Hans.CodeGen.Core.Commons
         public const string SmallInt = "smallint";
         public const string TinyInt = "tinyint";
         public const string DateTime = "datetime";
+        public const string DateTime2 = "datetime2";
         public const string Date = "date";
         public const string SmallDateTime = "smalldatetime";
         public const string NText = "ntext";
@@ -34,6 +35,7 @@ namespace Hans.CodeGen.Core.Commons
         public const string Double = "double";
         public const string Byte = "byte[]";
         public const string String = "string";
+        public const string String2 = "string?";
         public const string DateAndTime = "DateTime";
         public const string VarBinary = "varbinary";
 

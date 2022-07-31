@@ -28,6 +28,7 @@ namespace Hans.CodeGen.App
             Console.Write("Read From Db            : {0}\n", db.ReadFromDb);
             Console.Write("Read From Db File       : {0}\n", db.ReadFromDbFile);
             Console.Write("Database Context        : {0}\n", db.ApplicationName);
+            Console.Write("Remove Field(s)         : {0}\n", db.RemoveFields);
 
             Console.Write("\nPress any key to continue...");
             Console.ReadKey();
@@ -81,6 +82,7 @@ namespace Hans.CodeGen.App
             db.ReadFromDb = ConfigurationManager.AppSettings[KeyType.ReadFromDb].ToString();
             db.ReadFromDbFile = ConfigurationManager.AppSettings[KeyType.ReadFromDbFile].ToString();
             db.RemoveChars = ConfigurationManager.AppSettings[KeyType.RemoveChars].ToString();
+            db.RemoveFields = ConfigurationManager.AppSettings[KeyType.RemoveFields].ToString();
 
             return db;
         }

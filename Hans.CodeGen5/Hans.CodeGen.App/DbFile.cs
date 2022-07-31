@@ -87,8 +87,8 @@ namespace Hans.CodeGen.App
                     {
                         schema.Column = words[1].ToString();
                         schema.DataType = words[2].ToString();
-                        schema.IsNullable = words[3].ToString();
-                        schema.MaxLength = words[4].ToString();
+                        schema.MaxLength = words[3].ToString();
+                        schema.IsNullable = words[4].ToString();
                         schema.ColumnType = words[5].ToString();
 
                         constraint.Column = words[1].ToString();
@@ -98,6 +98,16 @@ namespace Hans.CodeGen.App
 
                 if (line.Contains(DbLineType.HasMany))
                 {
+                    relation.RelationType = RelationType.OneToMany;
+                    relation.ChildTable = words[1].ToString();
+                    relation.ParentTable = tableName;
+                    relation.FkConstraintColumn = string.Format("{0}", words[2].ToString());
+                    relation.PkConstraintColumn = string.Format("{0}", words[2].ToString());
+                }
+
+                if (line.Contains(DbLineType.HasOne))
+                {
+                    relation.RelationType = RelationType.OneToOne;
                     relation.ChildTable = words[1].ToString();
                     relation.ParentTable = tableName;
                     relation.FkConstraintColumn = string.Format("{0}", words[2].ToString());

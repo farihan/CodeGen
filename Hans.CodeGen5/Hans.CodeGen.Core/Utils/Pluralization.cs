@@ -18,6 +18,7 @@ namespace Hans.CodeGen.Core.Utils
             { "foot", "feet" },
             { "tooth", "teeth" },
             { "goose", "geese" },
+            { "(.*)info", @"$1infos" },
             // And now the more standard rules.
             { "(.*)fe?", "$1ves" },         // ie, wolf, wife
             { "(.*)man$", "$1men" },

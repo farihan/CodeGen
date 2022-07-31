@@ -35,7 +35,9 @@ namespace Hans.CodeGen.Core.Commons
         public const string RazorScripts = "Razor\\Web\\Scripts";
         public const string RazorAppStart = "Razor\\Web\\App_Start";
         public const string RazorWeb = "Razor\\Web";
+        public const string RazorCore = "Razor\\Core";
         public const string RazorDomains = "Razor\\Core\\Domains";
+        public const string RazorConfigurations = "Razor\\Core\\Configurations";
         public const string RazorRepository = "Razor\\Core\\Repository";
 
     }

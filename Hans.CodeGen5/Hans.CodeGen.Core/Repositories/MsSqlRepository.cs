@@ -40,7 +40,7 @@ namespace Hans.CodeGen.Core.DataProvider
                     s.Table = reader["table_name"].ToString();
                     s.Column = reader["column_name"].ToString();
                     s.DataType = reader["data_type"].ToString();
-                    s.MaxLength = string.IsNullOrEmpty(reader["character_maximum_length"].ToString()) ? "" : reader["character_maximum_length"].ToString();
+                    s.MaxLength = GetMaxLength(reader); // string.IsNullOrEmpty(reader["character_maximum_length"].ToString()) ? "" : reader["character_maximum_length"].ToString();
                     s.IsNullable = reader["is_nullable"].ToString();
                     //s.ConstraintType = reader["constraint_type"].ToString();
                     schemas.Add(s);
@@ -48,6 +48,17 @@ namespace Hans.CodeGen.Core.DataProvider
 
                 return schemas;
             }
+        }
+
+        private string GetMaxLength(IDataReader reader)
+        {
+            if (string.IsNullOrEmpty(reader["character_maximum_length"].ToString()))
+                return string.Empty;
+
+            if (reader["character_maximum_length"].ToString() == "-1")
+                return "MAX";
+
+            return reader["character_maximum_length"].ToString();
         }
 
         public List<Schema> GetSchemasBy(string tableName)
