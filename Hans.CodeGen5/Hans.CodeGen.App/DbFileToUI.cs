@@ -243,14 +243,12 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("    ViewData[\"Title\"] = \"Index\";");
             outFile.WriteLine("}");
             outFile.WriteLine();
-
-            outFile.WriteLine("<div>");
-            //outFile.WriteLine("    <a asp-action=\"Create\">Create New</a>");
-            outFile.WriteLine("    @Html.ActionLink(\"Create New\", \"Create\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-primary\" }})", className);
-            outFile.WriteLine("</div>");
+            outFile.WriteLine("<h4 class=\"border-bottom pb-2 mb-4\">{0}</h4>", className);
             outFile.WriteLine();
-
-            outFile.WriteLine("<div class=\"clearfix\"></div>");
+            outFile.WriteLine("<a asp-action=\"Create\" class=\"btn btn-primary mb-4\">");
+            outFile.WriteLine("    <i class=\"ri-add-circle-line ri-lg align-middle\"></i>");
+            outFile.WriteLine("    Create New");
+            outFile.WriteLine("</a>");
             outFile.WriteLine();
 
             //outFile.WriteLine("@using (Html.BeginForm(\"Index\", \"{0}\", FormMethod.Get))", className);
@@ -269,57 +267,71 @@ namespace Hans.CodeGen.App
             //outFile.WriteLine("<div class=\"clearfix\"></div>");
             //outFile.WriteLine();
 
-            outFile.WriteLine("<table class=\"table table-bordered table-striped\">");
-            outFile.WriteLine("    <thead>");
-            outFile.WriteLine("        <tr>");
-            outFile.WriteLine("            <th>No.</th>");
+            outFile.WriteLine("<div class=\"table-responsive\">");
+            outFile.WriteLine("    <table class=\"table striped\">");
+            outFile.WriteLine("        <thead>");
+            outFile.WriteLine("            <tr>");
+            outFile.WriteLine("                <th>No.</th>");
 
-            var unusedFields = db.RemoveFields.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+            var unusedFields = new List<string>(); // db.RemoveFields.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var s in db.Schemas.Where(p => p.Table == tableName))
             {
                 if (!unusedFields.Any(x => x == s.Column))
                 {
-                    outFile.WriteLine("            <th>@Html.SortLinks(\"{0}\", \"{0}\", Model.Sort, Model.CurrentPage, Model.IsAsc, ViewBag.CurrentQuery as string)</th>", s.Column);
+                    outFile.WriteLine("                <th>@Html.SortLinks(\"{0}\", \"{0}\", Model.Sort, Model.CurrentPage, Model.IsAsc, ViewBag.CurrentQuery as string)</th>", s.Column);
                 }
             }
 
-            outFile.WriteLine("        </tr>");
-            outFile.WriteLine("    </thead>");
-            outFile.WriteLine("    <tbody>");
-            outFile.WriteLine("    @foreach (var item in Model.{0}s)", className);
-            outFile.WriteLine("    {");
-
-            outFile.WriteLine("        Model.PageIndex++;");
-            outFile.WriteLine("        <tr>");
-            outFile.WriteLine("            <td>@Model.PageIndex</td>");
+            outFile.WriteLine("                <th></th>");
+            outFile.WriteLine("            </tr>");
+            outFile.WriteLine("        </thead>");
+            outFile.WriteLine("        <tbody>");
+            outFile.WriteLine("        @foreach (var item in Model.{0}s)", className);
+            outFile.WriteLine("        {");
+            outFile.WriteLine("            Model.PageIndex++;");
+            outFile.WriteLine("            <tr>");
+            outFile.WriteLine("                <td>@Model.PageIndex</td>");
+            
             foreach (var s in db.Schemas.Where(p => p.Table == tableName))
             {
                 if (!unusedFields.Any(x => x == s.Column))
                 {
                     if (s.Column == "Featured")
                     {
-                        outFile.WriteLine("            <td><input class=\"form-check-input\" type=\"checkbox\" checked=\"@item.{0}\" /></td>", s.Column);
+                        outFile.WriteLine("                <td><input class=\"form-check-input\" type=\"checkbox\" checked=\"@item.{0}\" /></td>", s.Column);
                     }
                     else
                     {
-                        outFile.WriteLine("            <td>@item.{0}</td>", s.Column);
+                        outFile.WriteLine("                <td>@item.{0}</td>", s.Column);
                     }
                 }
             }
 
-            outFile.WriteLine("            <td>");
-            outFile.WriteLine("                <a asp-action=\"Details\" asp-route-id=\"@item.{0}\">Details</a>", id);
-            outFile.WriteLine("                <a asp-action=\"Edit\" asp-route-id=\"@item.{0}\">Edit</a>", id);
-            outFile.WriteLine("                <a asp-action=\"Delete\" asp-route-id=\"@item.{0}\">Delete</a>", id);
-            outFile.WriteLine("            </td>");
-            outFile.WriteLine("        </tr>");
+            outFile.WriteLine("                <td>");
+            outFile.WriteLine("                    <div class=\"dropdown position-static\">");
+            outFile.WriteLine("                        <button class=\"btn btn-light btn-sm btn-action\" type=\"button\" id=\"dropdownAction-@item.Id\" data-bs-toggle=\"dropdown\" aria-expanded=\"false\">");
+            outFile.WriteLine("                            <i class=\"ri-more-2-fill align-middle\"></i>");
+            outFile.WriteLine("                        </button>");
+            outFile.WriteLine("                        <ul class=\"dropdown-menu\" aria-labelledby=\"dropdownAction-@item.Id\">");
+            outFile.WriteLine("                            <li>");
+            outFile.WriteLine("                                <a asp-action=\"Details\" asp-route-id=\"@item.Id\" class=\"dropdown-item\"><i class=\"ri-file-list-2-line\"></i> Details</a>");
+            outFile.WriteLine("                            </li>");
+            outFile.WriteLine("                            <li>");
+            outFile.WriteLine("                                <a asp-action=\"Edit\" asp-route-id=\"@item.Id\" class=\"dropdown-item\"><i class=\"ri-pencil-line\"></i> Edit</a>");
+            outFile.WriteLine("                            </li>");
+            outFile.WriteLine("                            <li>");
+            outFile.WriteLine("                                <a asp-action=\"Delete\" asp-route-id=\"@item.Id\" class=\"dropdown-item text-danger\"><i class=\"ri-delete-bin-line align-middle\"></i> Delete</a>");
+            outFile.WriteLine("                            </li>");
+            outFile.WriteLine("                        </ul>");
+            outFile.WriteLine("                    </div>");
+            outFile.WriteLine("                </td>");
+            outFile.WriteLine("            </tr>");
             outFile.WriteLine("    }");
-            outFile.WriteLine("    </tbody>");
-            outFile.WriteLine("</table>");
-            outFile.WriteLine();
-
-            outFile.WriteLine("@Html.PageLinks(Model.PageSize, Model.TotalPages, Model.CurrentPage, ViewBag.CurrentQuery as string)");
+            outFile.WriteLine("        </tbody>");
+            outFile.WriteLine("    </table>");
+            outFile.WriteLine("    @Html.PageLinks(Model.PageSize, Model.TotalPages, Model.CurrentPage, ViewBag.CurrentQuery as string)");
+            outFile.WriteLine("</div>");
             outFile.WriteLine();
 
             outFile.Close();
@@ -449,16 +461,33 @@ namespace Hans.CodeGen.App
                 }
                 else
                 {
-                    outFile.WriteLine("            <div class=\"form-group\">");
-                    outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", s.Column);
-                    outFile.WriteLine("                <input asp-for=\"{0}\" class=\"form-control\" />", s.Column);
-                    outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", s.Column);
-                    outFile.WriteLine("            </div>");
+                    if (s.FieldType == "Select")
+                    {
+                        outFile.WriteLine("            <div class=\"form-group\">");
+                        outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", s.Column);
+                        outFile.WriteLine("                <br />");
+                        outFile.WriteLine("                <select asp-for=\"Type\"");
+                        outFile.WriteLine("                        class=\"form-control\"");
+                        outFile.WriteLine("                        asp-items=\"Html.GetEnumSelectList<{0}>()\">", s.FieldTypeName);
+                        outFile.WriteLine("                    \"Select..\",");
+                        outFile.WriteLine("                    <option value=\"\">Select..</option>");
+                        outFile.WriteLine("                </select>");
+                        outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", s.Column);
+                        outFile.WriteLine("            </div>");
+                    }
+                    else
+                    {
+                        outFile.WriteLine("            <div class=\"form-group\">");
+                        outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", s.Column);
+                        outFile.WriteLine("                <input asp-for=\"{0}\" class=\"form-control\" />", s.Column);
+                        outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", s.Column);
+                        outFile.WriteLine("            </div>");
+                    }
                 }
             }
 
             outFile.WriteLine("            <div class=\"form-group\">");
-            outFile.WriteLine("                <input type=\"submit\" value=\"Create\" class=\"btn btn-sm btn-primary\" />");
+            outFile.WriteLine("                <input type=\"submit\" value=\"Create\" class=\"btn btn-primary\" />");
             //outFile.WriteLine("                @Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-secondary\" }})", className);
             outFile.WriteLine("                {0}", BackToListActionLink(className, "secondary"));
             outFile.WriteLine("            </div>");
@@ -579,12 +608,12 @@ namespace Hans.CodeGen.App
                 WriteReadProperty(tableName, outFile, s);
             }
 
-            outFile.WriteLine("        <div class=\"form-group\">");
-            outFile.WriteLine("           <a asp-action=\"Edit\" asp-route-id=\"@Model.{0}\" class=\"btn btn-sm btn-primary\">Edit</a>", id);
-            //outFile.WriteLine("           @Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-secondary\" }})", className);
-            outFile.WriteLine("           {0}", BackToListActionLink(className, "secondary"));
-            outFile.WriteLine("        </div>");
             outFile.WriteLine("    </dl>");
+            outFile.WriteLine("    <div class=\"form-group\">");
+            //outFile.WriteLine("           @Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-secondary\" }})", className);
+            outFile.WriteLine("        {0}", BackToListActionLink(className, "secondary"));
+            outFile.WriteLine("        <a asp-action=\"Edit\" asp-route-id=\"@Model.{0}\" class=\"btn btn-primary\">Edit</a>", id);
+            outFile.WriteLine("    </div>");
             outFile.WriteLine("</div>");
 
             outFile.Close();
@@ -692,7 +721,7 @@ namespace Hans.CodeGen.App
             }
 
             outFile.WriteLine("            <div class=\"form-group\">");
-            outFile.WriteLine("                <input type=\"submit\" value=\"Save\" class=\"btn btn-sm btn-primary\" />");
+            outFile.WriteLine("                <input type=\"submit\" value=\"Save\" class=\"btn btn-primary\" />");
             //outFile.WriteLine("                @Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-secondary\" }})", className);
             outFile.WriteLine("                {0}", BackToListActionLink(className, "secondary"));
             outFile.WriteLine("            </div>");
@@ -790,7 +819,7 @@ namespace Hans.CodeGen.App
 
             outFile.WriteLine("    <form asp-action=\"Delete\">");
             outFile.WriteLine("        <input type=\"hidden\" asp-for=\"{0}\" />", id);
-            outFile.WriteLine("        <input type=\"submit\" value=\"Delete\" class=\"btn btn-sm btn-danger\" />");
+            outFile.WriteLine("        <input type=\"submit\" value=\"Delete\" class=\"btn btn-danger\" />");
             //outFile.WriteLine("        @Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-secondary\" }})", className);
             outFile.WriteLine("        {0}", BackToListActionLink(className, "secondary"));
             outFile.WriteLine("    </form>");
@@ -876,6 +905,7 @@ namespace Hans.CodeGen.App
         {
             //var s = string.Format("@Html.ActionLink(\"Back to List\", \"Index\", \"{0}\", null, new {{ @class = \"btn btn-sm btn-{1}\" }})", className, buttonType);
             var s = string.Format("<a asp-action=\"Index\" asp-controller=\"{0}\" class=\"btn btn-sm btn-{1}\">Back to List</a>", className, buttonType);
+            var s1 = string.Format("<a asp-action=\"Index\" class=\"btn btn-light\"><i class=\"ri-arrow-left-line\"></i> Back to List</a>");
 
             return s;
         }
@@ -945,11 +975,28 @@ namespace Hans.CodeGen.App
             }
             else
             {
-                outFile.WriteLine("            <div class=\"form-group\">");
-                outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", schema.Column);
-                outFile.WriteLine("                <input asp-for=\"{0}\" class=\"form-control\" />", schema.Column);
-                outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", schema.Column);
-                outFile.WriteLine("            </div>");
+                if (schema.FieldType == "Select")
+                {
+                    outFile.WriteLine("            <div class=\"form-group\">");
+                    outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", schema.Column);
+                    outFile.WriteLine("                <br />");
+                    outFile.WriteLine("                <select asp-for=\"Type\"");
+                    outFile.WriteLine("                        class=\"form-control\"");
+                    outFile.WriteLine("                        asp-items=\"Html.GetEnumSelectList<{0}>()\">", schema.FieldTypeName);
+                    outFile.WriteLine("                    \"Select..\",");
+                    outFile.WriteLine("                    <option value=\"\">Select..</option>");
+                    outFile.WriteLine("                </select>");
+                    outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", schema.Column);
+                    outFile.WriteLine("            </div>");
+                }
+                else
+                {
+                    outFile.WriteLine("            <div class=\"form-group\">");
+                    outFile.WriteLine("                <label asp-for=\"{0}\" class=\"control-label\"></label>", schema.Column);
+                    outFile.WriteLine("                <input asp-for=\"{0}\" class=\"form-control\" />", schema.Column);
+                    outFile.WriteLine("                <span asp-validation-for=\"{0}\" class=\"text-danger\"></span>", schema.Column);
+                    outFile.WriteLine("            </div>");
+                }
             }
         }
 

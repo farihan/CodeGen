@@ -94,6 +94,40 @@ namespace Hans.CodeGen.App
                         constraint.Column = words[1].ToString();
                         constraint.Name = string.Empty;
                     }
+
+                    if (wordCount == 7)
+                    {
+                        schema.Column = words[1].ToString();
+                        schema.DataType = words[2].ToString();
+                        schema.IsNullable = words[3].ToString();
+                        schema.MaxLength = string.Empty;
+                        schema.ColumnType = words[4].ToString();
+                        schema.FieldType = words[5].ToString();
+                        schema.FieldTypeName = words[6].ToString();
+
+                        constraint.Column = words[1].ToString();
+                        constraint.Name = string.Empty;
+                    }
+
+                    if (wordCount == 8)
+                    {
+                        schema.Column = words[1].ToString();
+                        schema.DataType = words[2].ToString();
+                        schema.MaxLength = words[3].ToString();
+                        schema.IsNullable = words[4].ToString();
+                        schema.ColumnType = words[5].ToString();
+                        schema.FieldType = words[6].ToString();
+                        schema.FieldTypeName = words[7].ToString();
+
+                        constraint.Column = words[1].ToString();
+                        constraint.Name = string.Empty;
+                    }
+                }
+
+
+                if (tableName == "LookupComplainReason")
+                {
+                    var a = tableName;
                 }
 
                 if (line.Contains(DbLineType.HasMany))

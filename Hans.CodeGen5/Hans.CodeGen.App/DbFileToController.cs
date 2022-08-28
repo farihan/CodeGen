@@ -94,15 +94,17 @@ namespace Hans.CodeGen.App
             if (repo == "EF")
             {
                 outFile.WriteLine("        private readonly {0}Context _context;", db.ApplicationName);
-                outFile.WriteLine("        private readonly string _username;");
+                if (db.EnableAuditTrail == "false")
+                    outFile.WriteLine("        private readonly string _username;");
                 outFile.WriteLine("        private IWebHostEnvironment _environment;");
-                outFile.WriteLine("         private const string _folderType = \"{0}\";", tableName);
+                outFile.WriteLine("        private const string _folderType = \"{0}\";", tableName);
                 //outFile.WriteLine("        //public IRepository<{0}> {0}Repository {{ get; set; }}", className);
                 outFile.WriteLine();
                 outFile.WriteLine("        public {0}Controller({1}Context context, IWebHostEnvironment environment)", className, db.ApplicationName);
                 outFile.WriteLine("        {");
                 outFile.WriteLine("            _context = context;");
-                outFile.WriteLine("            _username = \"User1\";");
+                if (db.EnableAuditTrail == "false")
+                    outFile.WriteLine("            _username = \"User1\";");
                 outFile.WriteLine("            _environment = environment;");
                 outFile.WriteLine("        }");
             }
@@ -324,12 +326,17 @@ namespace Hans.CodeGen.App
                     }
                     else
                     {
-                        outFile.WriteLine("                    {1}.{0} = model.{0};", columnName, className.LoweredFirstChar());
+                        if (s.FieldType == "Select")
+                        {
+                            outFile.WriteLine("                    {1}.{0} = (int)model.{0},", columnName, className.LoweredFirstChar());
+                        }
+                        else
+                        {
+                            outFile.WriteLine("                    {1}.{0} = model.{0};", columnName, className.LoweredFirstChar());
+                        }
                     }
                 }
             }
-            outFile.WriteLine("                    {0}.UpdatedAt = DateTime.Now;", className.LoweredFirstChar());
-            outFile.WriteLine("                    {0}.UpdatedBy = _username;", className.LoweredFirstChar());
             outFile.WriteLine();
             outFile.WriteLine("                    _context.Entry({0}).State = EntityState.Modified;", className.LoweredFirstChar());
             outFile.WriteLine("                    await _context.SaveChangesAsync();");
@@ -448,16 +455,18 @@ namespace Hans.CodeGen.App
                         }
                         else
                         {
-                            outFile.WriteLine("                        {0} = model.{0},", columnName, className.LoweredFirstChar());
+                            if (s.FieldType == "Select")
+                            {
+                                outFile.WriteLine("                        {0} = (int)model.{0},", columnName, className.LoweredFirstChar());
+                            }
+                            else
+                            {
+                                outFile.WriteLine("                        {0} = model.{0},", columnName, className.LoweredFirstChar());
+                            }
                         }
                     }
                 }
             }
-
-            outFile.WriteLine("                        CreatedAt = DateTime.Now,");
-            outFile.WriteLine("                        UpdatedAt = DateTime.Now,");
-            outFile.WriteLine("                        CreatedBy = _username,");
-            outFile.WriteLine("                        UpdatedBy = _username");
             outFile.WriteLine("                    };");
             outFile.WriteLine();
 
@@ -612,7 +621,8 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("            model.PageSize = 10; //int.Parse(ConfigurationManager.AppSettings[\"PageSize\"]);");
             if (repo == "EF")
             {
-                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)_context.{0}.Count() / model.PageSize);", className);
+                //outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)_context.{0}.Count() / model.PageSize);", className);
+                outFile.WriteLine("            model.TotalPages = (int)Math.Ceiling((double)list.Count() / model.PageSize);", className);
             }
 
             if (repo == "NH")
@@ -674,7 +684,7 @@ namespace Hans.CodeGen.App
         {
             var pluralization = new Pluralization();
 
-            outFile.WriteLine("        public FileResult Download(int id, string downloadType, string attachment)");
+            outFile.WriteLine("        private FileResult Download(int id, string downloadType, string attachment)");
             outFile.WriteLine("        {");
             outFile.WriteLine("            var path = Path.Combine(_environment.WebRootPath, _folderType, string.Format($\"{id}\"), string.Format($\"{downloadType}\")) + \"\\\\\" + attachment;");
             outFile.WriteLine("            var bytes = System.IO.File.ReadAllBytes(path);");
@@ -683,7 +693,7 @@ namespace Hans.CodeGen.App
             outFile.WriteLine("        }");
             outFile.WriteLine();
 
-            outFile.WriteLine("        public static {0}ReadViewModel To{0}ReadViewModel({0} {1})", className, className.LoweredFirstChar());
+            outFile.WriteLine("        private static {0}ReadViewModel To{0}ReadViewModel({0} {1})", className, className.LoweredFirstChar());
             outFile.WriteLine("        {");
             outFile.WriteLine("            var model = new {0}ReadViewModel()", className);
             outFile.WriteLine("            {");
@@ -715,7 +725,14 @@ namespace Hans.CodeGen.App
                     }
                     else
                     {
-                        outFile.WriteLine("                {0} = {1}.{0}", columnName, className.LoweredFirstChar());
+                        if (s.FieldType == "Select")
+                        {
+                            outFile.WriteLine("                {0} = ({2}){1}.{0}", columnName, className.LoweredFirstChar(), s.FieldTypeName);
+                        }
+                        else
+                        {
+                            outFile.WriteLine("                {0} = {1}.{0}", columnName, className.LoweredFirstChar());
+                        }
                     }
                 }
                 else
@@ -738,7 +755,14 @@ namespace Hans.CodeGen.App
                     }
                     else
                     {
-                        outFile.WriteLine("                {0} = {1}.{0},", columnName, className.LoweredFirstChar());
+                        if (s.FieldType == "Select")
+                        {
+                            outFile.WriteLine("                {0} = ({2}){1}.{0},", columnName, className.LoweredFirstChar(), s.FieldTypeName);
+                        }
+                        else
+                        {
+                            outFile.WriteLine("                {0} = {1}.{0},", columnName, className.LoweredFirstChar());
+                        }
                     }
                 }
             }
@@ -749,14 +773,14 @@ namespace Hans.CodeGen.App
             outFile.WriteLine();
 
             var pluralWord = pluralization.Pluralize(className.LoweredFirstChar());
-            outFile.WriteLine("        public static List<{0}ReadViewModel> To{0}ReadViewModels(List<{0}> {1})", className, pluralWord);
+            outFile.WriteLine("        private static List<{0}ReadViewModel> To{0}ReadViewModels(List<{0}> {1})", className, pluralWord);
             outFile.WriteLine("        {");
             outFile.WriteLine("            var list = new List<{0}ReadViewModel>();", className);
             outFile.WriteLine();
             outFile.WriteLine("            foreach (var item in {0})", pluralWord);
             outFile.WriteLine("            {");
             outFile.WriteLine("                list.Add(To{0}ReadViewModel(item));", className);
-            outFile.WriteLine("            };");
+            outFile.WriteLine("            }");
             outFile.WriteLine();
             outFile.WriteLine("            return list;");
             outFile.WriteLine("        }");

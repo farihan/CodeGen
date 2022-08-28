@@ -30,6 +30,8 @@ namespace Hans.CodeGen.Core.Domains
         public string IsNullable { get; set; }
         public string ConstraintType { get; set; }
         public string ColumnType { get; set; }
+        public string FieldType { get; set; }
+        public string FieldTypeName { get; set; }
         public string MsSqlDataType()
         {
             var type = string.Empty;
@@ -78,7 +80,7 @@ namespace Hans.CodeGen.Core.Domains
                 case Commons.MsSqlDataType.Text:
                 case Commons.MsSqlDataType.NVarChar:
                 case Commons.MsSqlDataType.VarChar:
-                    type = Commons.MsSqlDataType.String2;
+                    type = Commons.MsSqlDataType.String;
                     break;
             }
 

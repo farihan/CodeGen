@@ -4,6 +4,7 @@ using Hans.CodeGen.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +15,50 @@ namespace Hans.CodeGen.App
     {
         static void Main(string[] args)
         {
+            //var rand1 = Math.andom().toString(36).substr(2, 6).toUpperCase();
+            //var rand2 = Math.random().toString(36).substr(2, 6).toUpperCase();
+            //SubmissionNo = Random + Random2
+            //L0G4EZ7U8QSE
+
+            //var random = new Random();
+            //var rand1 = random.Next().ToString().Substring(2, 6).ToUpper();
+            //var rand2 = random.Next().ToString().Substring(2, 6).ToUpper();
+            //var submissionNo1 = rand1 + rand2;
+
+            //var rand3 = GenerateRandom(36).Substring(2, 6).ToUpper();
+            //var rand4 = GenerateRandom(36).Substring(2, 6).ToUpper();
+            //var submissionNo2 = rand3 + rand4;
+
+            //Console.WriteLine(rand1);
+            //Console.WriteLine(rand2);
+            //Console.WriteLine(submissionNo1);
+
+            //Console.WriteLine(rand3);
+            //Console.WriteLine(rand4);
+            //Console.WriteLine(submissionNo2);
+            //Console.ReadKey();
+
+            //var list = new List<int>() { 10, 11, 12, 13, 14, 15, 16 };
+            //var check = 10;
+            //var exit = true;
+            //do
+            //{
+            //    // get submission number
+            //    check++; 
+            //    // check duplicate
+            //    var exist = list.Any(x => x == check);
+            //    // if not exist.. set exit to false and proceed to save
+            //    if (!exist)
+            //        exit = false;
+
+            //    Console.WriteLine("submission number:" + check);
+            //    Console.WriteLine("exist in db      :" + exist);
+            //} while (exit);
+
+            //Console.ReadKey();
+
             var db = Setup();
+            Console.WriteLine(DateTime.Now.AddDays(30).ToString("d MMMM yyyy", new CultureInfo("ms-MY")));
 
             Console.WriteLine("Code Generator");
             Console.WriteLine("==============");
@@ -28,7 +72,8 @@ namespace Hans.CodeGen.App
             Console.Write("Read From Db            : {0}\n", db.ReadFromDb);
             Console.Write("Read From Db File       : {0}\n", db.ReadFromDbFile);
             Console.Write("Database Context        : {0}\n", db.ApplicationName);
-            Console.Write("Remove Field(s)         : {0}\n", db.RemoveFields);
+            Console.Write("Remove Field(s)         : {0}\n", db.EnableAuditTrail);
+            Console.Write("Remove Field(s)         : {0}\n", db);
 
             Console.Write("\nPress any key to continue...");
             Console.ReadKey();
@@ -83,6 +128,7 @@ namespace Hans.CodeGen.App
             db.ReadFromDbFile = ConfigurationManager.AppSettings[KeyType.ReadFromDbFile].ToString();
             db.RemoveChars = ConfigurationManager.AppSettings[KeyType.RemoveChars].ToString();
             db.RemoveFields = ConfigurationManager.AppSettings[KeyType.RemoveFields].ToString();
+            db.EnableAuditTrail = ConfigurationManager.AppSettings[KeyType.EnableAuditTrail].ToString();
 
             return db;
         }
@@ -101,6 +147,15 @@ namespace Hans.CodeGen.App
             {
                 throw new Exception("Constraints are NULL");
             }
+        }
+
+        private static string GenerateRandom(int length)
+        {
+            var random = new Random();
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+            return new string(Enumerable.Repeat(chars, length)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

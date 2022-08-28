@@ -135,7 +135,8 @@ namespace Hans.CodeGen.App
             //outFile.WriteLine("using System.Linq;");
             //outFile.WriteLine("using System.Text;");
 
-            outFile.WriteLine("using CFF.Helpers.Common;");
+            //outFile.WriteLine("using CFF.Helpers.Common;");
+            outFile.WriteLine("using System.ComponentModel.DataAnnotations;");
             outFile.WriteLine();
             outFile.WriteLine("namespace {0}.ViewModels", db.ApplicationName);
             outFile.WriteLine("{");
@@ -189,7 +190,7 @@ namespace Hans.CodeGen.App
             //outFile.WriteLine("using System.Linq;");
             //outFile.WriteLine("using System.Text;");
             //outFile.WriteLine("using CFF.Models;");
-            outFile.WriteLine("using CFF.Helpers.Common;");
+            //outFile.WriteLine("using CFF.Helpers.Common;");
             //outFile.WriteLine("using CFF.Models;");
             outFile.WriteLine("using System.ComponentModel.DataAnnotations;");
             outFile.WriteLine();
@@ -282,7 +283,7 @@ namespace Hans.CodeGen.App
             //outFile.WriteLine("using System.Collections.Generic;"); ;
             //outFile.WriteLine("using System.Linq;");
             //outFile.WriteLine("using System.Text;");
-            outFile.WriteLine("using CFF.Helpers.Common;");
+            //outFile.WriteLine("using CFF.Helpers.Common;");
             outFile.WriteLine("using System.ComponentModel.DataAnnotations;");
             outFile.WriteLine();
             outFile.WriteLine("namespace {0}.ViewModels", db.ApplicationName);
@@ -338,17 +339,24 @@ namespace Hans.CodeGen.App
 
         private static void WriteProperty(StreamWriter outFile, Schema schema, string columnName, string property, bool isUpdate = false)
         {
-
-            if (columnName == "Image")
+            if (columnName == "Id" || columnName == "CreatedAt" || columnName == "UpdatedAt")
+            {
+                outFile.WriteLine("        [Display(Name = \"{0}\")]", columnName.SplitCamelCase());
+                outFile.WriteLine("        public {0} {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String2 ? "= string.Empty;" : "");
+            }
+            else if (columnName == "Image")
             {
                 if (isUpdate)
                 {
+                    outFile.WriteLine("        [Display(Name = \"Image\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public string? Image { get; set; } = string.Empty;");
                     outFile.WriteLine();
+                    outFile.WriteLine("        [Display(Name = \"ImageUpdate\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public IFormFile? ImageUpdate { get; set; }");
                 }
                 else
                 {
+                    outFile.WriteLine("        [Display(Name = \"Image\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public IFormFile? Image { get; set; }");
                 }
             }
@@ -357,12 +365,15 @@ namespace Hans.CodeGen.App
 
                 if (isUpdate)
                 {
+                    outFile.WriteLine("        [Display(Name = \"Attachment\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public string? Attachment { get; set; } = string.Empty;");
                     outFile.WriteLine();
+                    outFile.WriteLine("        [Display(Name = \"AttachmentUpdate\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public IFormFile? AttachmentUpdate { get; set; }");
                 }
                 else
                 {
+                    outFile.WriteLine("        [Display(Name = \"Attachment\")]", columnName.SplitCamelCase());
                     outFile.WriteLine("        public IFormFile? Attachment { get; set; }");
                 }
             }
@@ -376,14 +387,21 @@ namespace Hans.CodeGen.App
             }
             else
             {
-                outFile.WriteLine("        public {0} {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String2 ? "= string.Empty;" : "");
+                outFile.WriteLine("        [Display(Name = \"{0}\")]", columnName.SplitCamelCase());
+                outFile.WriteLine("        public {0}? {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String2 ? "= string.Empty;" : "");
             }
         }
 
         private static void WriteReadProperty(StreamWriter outFile, Schema schema, string columnName, string property, bool isUpdate = false)
         {
-            if (columnName == "Image")
+            if (columnName == "Id" || columnName == "CreatedAt" || columnName == "UpdatedAt")
             {
+                outFile.WriteLine("        [Display(Name = \"{0}\")]", columnName.SplitCamelCase());
+                outFile.WriteLine("        public {0} {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String ? "= string.Empty;" : "");
+            }
+            else if (columnName == "Image")
+            {
+                outFile.WriteLine("        [Display(Name = \"Image\")]", columnName.SplitCamelCase());
                 outFile.WriteLine("        public string? Image { get; set; } = string.Empty;");
             }
             else if (columnName == "Attachment")
@@ -400,7 +418,8 @@ namespace Hans.CodeGen.App
             }
             else
             {
-                outFile.WriteLine("        public {0} {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String2 ? "= string.Empty;" : "");
+                outFile.WriteLine("        [Display(Name = \"{0}\")]", columnName.SplitCamelCase());
+                outFile.WriteLine("        public {0}? {1} {2} {3}", schema.MsSqlDataType(), columnName, property, schema.MsSqlDataType() == MsSqlDataType.String ? "= string.Empty;" : "");
             }
         }
     }

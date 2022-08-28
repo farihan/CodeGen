@@ -19,6 +19,7 @@ namespace Hans.CodeGen.Core.Domains
         public string RemoveChars { get; set; }
         public string ApplicationName { get; set; }
         public string RemoveFields { get; set; }
+        public string EnableAuditTrail { get; set; }
 
         public List<Schema> Schemas { get; set; }
         public List<Relation> Relations { get; set; }

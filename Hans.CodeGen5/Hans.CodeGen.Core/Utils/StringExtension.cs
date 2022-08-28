@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Hans.CodeGen.Core.Utils
@@ -137,6 +136,12 @@ namespace Hans.CodeGen.Core.Utils
             }
 
             return s.ToLower();
+        }
+
+        public static string SplitCamelCase(this string input)
+        {
+            var list = Regex.Split(input, @"([A-Z]?[a-z]+)").Where(str => !string.IsNullOrEmpty(str));
+            return string.Join(" ", list.ToArray());
         }
     }
 }

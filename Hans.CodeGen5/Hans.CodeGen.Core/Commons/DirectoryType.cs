@@ -39,6 +39,7 @@ namespace Hans.CodeGen.Core.Commons
         public const string RazorDomains = "Razor\\Core\\Domains";
         public const string RazorConfigurations = "Razor\\Core\\Configurations";
         public const string RazorRepository = "Razor\\Core\\Repository";
+        public const string RazorPdf = "Razor\\Core\\Pdf";
 
     }
 }

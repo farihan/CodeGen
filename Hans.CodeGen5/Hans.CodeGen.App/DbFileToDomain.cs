@@ -18,6 +18,7 @@ namespace Hans.CodeGen.App
             var path3 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorDomains);
             var path4 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorConfigurations);
             var path5 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorCore);
+            var path6 = string.Format(@"{0}\{1}", db.OutputDirectory, DirectoryType.RazorPdf);
 
             if (string.IsNullOrEmpty(path1) || string.IsNullOrEmpty(path2) || string.IsNullOrEmpty(path3))
             {
@@ -30,6 +31,7 @@ namespace Hans.CodeGen.App
 
             Folder.Create(path4);
             Folder.Create(path5);
+            Folder.Create(path6);
 
             foreach (var tableName in db.Schemas
                 .Select(x => x.Table)
@@ -44,6 +46,7 @@ namespace Hans.CodeGen.App
                 WriterForDomain(path2, tableName, className, db);
                 WriterForDomain(path3, tableName, className, db);
                 WriterForConfiguration(path4, tableName, className, db);
+                WriterForPdf(path6, tableName, className, db);
             }
             
             WriterForContext(path5, db);
@@ -282,7 +285,12 @@ namespace Hans.CodeGen.App
             }
 
             var pluralize = new Pluralization();
-            
+
+            if (tableName == "LookupComplainReason")
+            {
+                var a = tableName;
+            }
+
             foreach (var r in db.Relations.Where(p => p.ParentTable == tableName).OrderBy(p => p.ChildTable))
             {
                 if (r.RelationType == RelationType.OneToMany)
@@ -358,6 +366,38 @@ namespace Hans.CodeGen.App
             }
 
             outFile.WriteLine("        }");
+
+            outFile.WriteLine("    }");
+            outFile.WriteLine("}");
+
+            outFile.Close();
+
+            Console.Write(string.Format("\n{0} created", textPath));
+        }
+
+        private static void WriterForPdf(string path, string tableName, string className, DatabaseInfo db)
+        {
+            var ns = string.Format("{0}.Models", db.ApplicationName);
+            var textPath = string.Format(@"{0}\{1}.cs", path, className);
+
+            var outFile = File.CreateText(textPath);
+
+            outFile.WriteLine("namespace {0}", ns);
+            outFile.WriteLine("{");
+            outFile.WriteLine("    public class {0}", className);
+            outFile.WriteLine("    {");
+
+            foreach (var s in db.Schemas.Where(p => p.Table == tableName))
+            {
+                outFile.WriteLine("                    if ({0}.{1} is not null)", tableName.LoweredFirstChar(), s.Column);
+                outFile.WriteLine("                    {");
+                outFile.WriteLine("                        column.Item().Row(row =>");
+                outFile.WriteLine("                        {");
+                outFile.WriteLine("                            row.RelativeItem().ValueCell().PaddingLeft(5).Text($\"{0}\").Bold();", s.Column);
+                outFile.WriteLine("                            row.RelativeItem(2).ValueCell().PaddingLeft(5).Text($\"{{{0}.{1}}}\");", tableName.LoweredFirstChar(), s.Column);
+                outFile.WriteLine("                        });");
+                outFile.WriteLine("                    }");
+            }
 
             outFile.WriteLine("    }");
             outFile.WriteLine("}");
